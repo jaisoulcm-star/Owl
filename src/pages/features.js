@@ -5,14 +5,7 @@ export function visionPage() {
     <section class="section">
       <div class="container" style="max-width:950px">
         <div class="text-center animate-in">
-          <span class="badge badge-primary" style="margin-bottom:12px">Google Satellite & GIS AI</span>
-          <h1>AI Site Camera, Geotagging & Google Satellite GIS</h1>
-          <p style="margin-top:8px;margin-bottom:24px">Analyze construction site photos with live camera feed, high-resolution Google Satellite aerial layers, and save geotagged site records directly to Firebase backend storage.</p>
-          
-          <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:28px">
-            <span class="badge badge-success" style="padding:6px 14px"><i class="fas fa-satellite"></i> Google Satellite API Connected</span>
-            <span class="badge badge-primary" style="padding:6px 14px"><i class="fas fa-database"></i> Firebase Storage Active</span>
-          </div>
+          <h1 style="margin-bottom:24px">AI Site Camera, Geotagging & Google Satellite GIS</h1>
         </div>
         
         <div class="card animate-in">
@@ -84,7 +77,6 @@ export function insightsPage() {
     <section class="section">
       <div class="container" style="max-width:1000px">
         <div class="text-center animate-in">
-          <span class="badge badge-primary" style="margin-bottom:12px">AI Powered</span>
           <h1>Project Insights & Estimation</h1>
           <p style="margin-top:8px;margin-bottom:36px">Detailed AI-driven cost breakdowns and smart material recommendations tailored to your construction project.</p>
         </div>
@@ -126,7 +118,7 @@ export function insightsPage() {
             <!-- Search & Filter Controls -->
             <div style="margin-bottom:20px">
               <div class="form-group" style="margin-bottom:12px">
-                <input type="text" id="materialSearchInput" class="form-input" placeholder="🔍 Search by brand name (e.g. UltraTech, Tata Tiscon, Godrej Interio, Asian Paints...)" style="font-size:0.95rem;padding:12px 16px">
+                <input type="text" id="materialSearchInput" class="form-input" placeholder="Search by brand name (e.g. UltraTech, Tata Tiscon, Godrej Interio, Asian Paints...)" style="font-size:0.95rem;padding:12px 16px">
               </div>
 
               <div class="flex-between" style="gap:8px;overflow-x:auto;padding-bottom:8px" id="categoryFilterBar">
@@ -168,7 +160,6 @@ export function resourcesPage() {
     <section class="section">
       <div class="container" style="max-width:900px">
         <div class="text-center animate-in">
-          <span class="badge badge-primary" style="margin-bottom:12px">AI Powered</span>
           <h1>Product & Material Recommendations</h1>
           <p style="margin-top:8px;margin-bottom:36px">Smart AI suggestions for structural materials, machinery, and equipment.</p>
         </div>
@@ -193,7 +184,6 @@ export function reportPage() {
     <section class="section">
       <div class="container" style="max-width:900px">
         <div class="text-center animate-in">
-          <span class="badge badge-primary" style="margin-bottom:12px">AI Powered</span>
           <h1>Generate Site Report</h1>
           <p style="margin-top:8px;margin-bottom:36px">Automated professional progress and site condition reports.</p>
         </div>
@@ -213,22 +203,7 @@ export function morePage() {
   return `
     <section class="section">
       <div class="container">
-        <h1 class="text-center animate-in">Google Satellite, GIS & Weather Hub</h1>
-        <p class="text-center animate-in" style="margin-top:8px;margin-bottom:32px">High-resolution Google Satellite aerial imagery, GIS elevation layers, live weather, and Firebase backend storage integration.</p>
-
-        <!-- API Connection Banner -->
-        <div class="card animate-in" style="margin-bottom:24px;background:rgba(15,23,42,0.8);border:1px solid rgba(110,231,255,0.25)">
-          <div class="flex-between" style="flex-wrap:wrap;gap:12px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="font-size:2rem;color:var(--accent)"><i class="fas fa-satellite"></i></div>
-              <div>
-                <h4 style="margin:0">Google Satellite & GIS API (Secret Key Connected)</h4>
-                <p class="text-muted" style="font-size:0.85rem;margin:0">Backend securely reads process.env.GOOGLE_SATELLITE_API_KEY and FIREBASE_DATABASE_URL.</p>
-              </div>
-            </div>
-            <span class="badge badge-success" style="font-size:0.85rem"><i class="fas fa-check-circle"></i> API Active</span>
-          </div>
-        </div>
+        <h1 class="text-center animate-in" style="margin-bottom:32px">Google Satellite, GIS & Weather Hub</h1>
 
         <!-- Tamil Nadu Construction Hubs Quick Selector -->
         <div class="card animate-in" style="margin-bottom:24px;background:rgba(15,23,42,0.85);border:1px solid rgba(251,191,36,0.3)">

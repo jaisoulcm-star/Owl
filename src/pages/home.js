@@ -18,12 +18,9 @@ export function homePage() {
         <div class="skill-sphere-header animate-in">
           <div class="skill-hud-badge">
             <span class="hud-pulse-dot"></span>
-            <span class="hud-badge-text">✧ AI-Powered Smart Construction</span>
+            <span class="hud-badge-text"><i class="fas fa-sparkles"></i> AI-Powered Smart Construction</span>
           </div>
-          <h2 class="text-center" style="margin-top: 14px; margin-bottom: 8px;">3D Smart Construction House & Intelligence Network</h2>
-          <p class="text-center" style="color: var(--text-muted); max-width: 820px; margin: 0 auto 28px;">
-            <strong style="color:var(--primary)">Design • Build • Analyze • Manage</strong> — Explore an interactive 3D smart architectural model surrounded by AI risk analysis, interior design, material optimization, and project progress telemetry.
-          </p>
+          <h2 class="text-center" style="margin-top: 14px; margin-bottom: 28px;">3D Smart Construction House & Intelligence Network</h2>
         </div>
 
         <!-- 3D Construction House Viewport Wrapper -->

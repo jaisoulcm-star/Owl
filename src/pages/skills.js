@@ -1,5 +1,5 @@
 // ==================== Standalone 3D Skills Universe Page ====================
-import { SKILL_CATEGORIES } from '../components/skillSphere/skillsData.js';
+import { FEATURE_CATEGORIES as SKILL_CATEGORIES } from '../components/constructionHouse/constructionFeaturesData.js';
 
 export function skillsPage() {
   return `
@@ -7,26 +7,7 @@ export function skillsPage() {
       <div class="skill-universe-container">
         <!-- HUD Header -->
         <div class="skill-hud-header">
-          <div class="skill-hud-top-row">
-            <div class="skill-hud-badge">
-              <span class="hud-pulse-dot"></span>
-              <span class="hud-badge-text">✧ AI-Powered Smart Construction</span>
-            </div>
-            
-            <div class="skill-hud-controls">
-              <button id="skillRotateToggleBtn" class="hud-btn" title="Toggle Auto-Rotation">
-                <i class="fas fa-arrows-rotate"></i> <span>Orbit: Active</span>
-              </button>
-              <button id="skillResetCamBtn" class="hud-btn" title="Reset Viewpoint">
-                <i class="fas fa-crosshairs"></i> <span>Reset View</span>
-              </button>
-            </div>
-          </div>
-
           <h1 class="skill-hud-headline">3D Smart Construction House Ecosystem</h1>
-          <p class="skill-hud-subtitle">
-            <strong style="color:var(--primary)">Design • Build • Analyze • Manage</strong> — A real-time 3D architectural command center connecting AI analysis, parametric architecture, materials, and project tracking to a futuristic smart house.
-          </p>
 
           <!-- Category Filter Pills -->
           <div class="skill-category-filters" id="skillCategoryFilters">

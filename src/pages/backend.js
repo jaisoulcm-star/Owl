@@ -6,9 +6,6 @@ export function backendPage() {
       <div class="container" style="max-width:1100px">
         <!-- Hero & Header Section -->
         <div class="text-center animate-in" style="margin-bottom:32px">
-          <span class="badge badge-primary" style="margin-bottom:12px;font-size:0.85rem">
-            <i class="fas fa-server" style="margin-right:6px;color:var(--accent)"></i> Backend Architecture & Cloud DB
-          </span>
           <h1 style="font-size:2.4rem;font-weight:800;letter-spacing:-0.5px">
             Firebase Backend Storage Console
           </h1>
@@ -165,7 +162,7 @@ export function backendPage() {
 
             <!-- Search Bar & Refresh -->
             <div class="flex-between" style="gap:12px;margin-bottom:16px">
-              <input class="form-input" id="searchBackendDocsInput" placeholder="🔍 Search records in collection..." style="max-width:320px">
+              <input class="form-input" id="searchBackendDocsInput" placeholder="Search records in collection..." style="max-width:320px">
               <button id="refreshBackendDocsBtn" class="btn btn-outline btn-sm">
                 <i class="fas fa-rotate"></i> Refresh
               </button>

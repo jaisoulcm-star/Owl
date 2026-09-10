@@ -39,11 +39,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #0f172a, #1e293b)',
       advantages: ['MakeMyHouse Top Rated Layout', 'High daylight & cross wind circulation', 'Dedicated Puja alcove'],
       rooms: [
-        { name: 'Living & Dining Hall', size: `${Math.round(widthNum * 0.55)}' x ${Math.round(depthNum * 0.38)}'` },
-        { name: 'Master Bedroom Suite', size: `${Math.round(widthNum * 0.45)}' x ${Math.round(depthNum * 0.32)}' (Attached Bath)` },
-        { name: 'Bedroom 2 / Guest', size: `${Math.round(widthNum * 0.4)}' x ${Math.round(depthNum * 0.3)}'` },
-        { name: 'SE Modular Kitchen', size: `${Math.round(widthNum * 0.35)}' x ${Math.round(depthNum * 0.25)}'` },
-        { name: 'Car Parking Garage', size: `${Math.round(widthNum * 0.45)}' x ${Math.round(depthNum * 0.35)}'` }
+        { name: 'Living & Dining Hall', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.3)}'` },
+        { name: 'Master Bedroom Suite', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}' (Attached Bath)` },
+        { name: 'Bedroom 2 / Guest', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'SE Modular Kitchen', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.15)}'` },
+        { name: 'Car Parking Garage', size: `${Math.round(widthNum * 0.95)}' x ${Math.round(depthNum * 0.25)}'` }
       ],
       costRange: `${formatINR(baseCostMin)} - ${formatINR(baseCostMax)}`,
       colsCount: Math.max(8, Math.round(sqftNum / 120)),
@@ -60,11 +60,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #1e1b4b, #312e81)',
       advantages: ['Ultra-modern kerb appeal', 'Spacious open-plan kitchen island', 'Low maintenance materials'],
       rooms: [
-        { name: 'Grand Living Room', size: `${Math.round(widthNum * 0.6)}' x ${Math.round(depthNum * 0.4)}'` },
-        { name: 'Open Kitchen & Island', size: `${Math.round(widthNum * 0.4)}' x ${Math.round(depthNum * 0.25)}'` },
-        { name: 'Master Suite', size: `14' x 15' with Walk-in Closet` },
-        { name: 'Bed 2 / Kids Room', size: `12' x 13'` },
-        { name: 'Front Glass Terrace', size: `6' x 14'` }
+        { name: 'Grand Living Room', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.3)}'` },
+        { name: 'Open Kitchen & Island', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Master Suite', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}' with Closet` },
+        { name: 'Bed 2 / Kids Room', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Front Glass Terrace', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.1)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.06))} - ${formatINR(Math.round(baseCostMax * 1.09))}`,
       colsCount: Math.max(8, Math.round(sqftNum / 115)),
@@ -81,11 +81,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #064e3b, #047857)',
       advantages: ['Natural thermal insulation (3°C cooler)', '100% Vastu Brahmasthan clearance', 'Chettinad wooden pillar veranda'],
       rooms: [
-        { name: 'Central Courtyard', size: `10' x 10' Open Skylight` },
-        { name: 'Formal Living Room', size: `14' x 16'` },
-        { name: 'Master Bedroom', size: `13' x 15'` },
-        { name: 'Bedroom 2', size: `12' x 13'` },
-        { name: 'Traditional Kitchen', size: `10' x 12'` }
+        { name: 'Central Courtyard', size: `${Math.round(widthNum * 0.4)}' x ${Math.round(depthNum * 0.15)}' Open Skylight` },
+        { name: 'Formal Living Room', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Master Bedroom', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Bedroom 2', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Traditional Kitchen', size: `${Math.round(widthNum * 0.7)}' x ${Math.round(depthNum * 0.15)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.1))} - ${formatINR(Math.round(baseCostMax * 1.13))}`,
       colsCount: Math.max(10, Math.round(sqftNum / 110)),
@@ -102,11 +102,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #451a03, #78350f)',
       advantages: ['100% space utilization efficiency', 'Dual wind tunnel ventilation', 'Built-in lofts for storage'],
       rooms: [
-        { name: 'Living & Dining Area', size: `15' x 18'` },
-        { name: 'Master Bedroom', size: `12' x 14'` },
-        { name: 'Children Bedroom', size: `11' x 12'` },
-        { name: 'Modular Kitchen', size: `9' x 11'` },
-        { name: 'Front Balcony', size: `5' x 15'` }
+        { name: 'Living & Dining Area', size: `${Math.round(widthNum * 0.95)}' x ${Math.round(depthNum * 0.3)}'` },
+        { name: 'Master Bedroom', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Children Bedroom', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Modular Kitchen', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.15)}'` },
+        { name: 'Front Balcony', size: `${Math.round(widthNum * 0.95)}' x ${Math.round(depthNum * 0.1)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 0.95))} - ${formatINR(Math.round(baseCostMax * 0.98))}`,
       colsCount: Math.max(8, Math.round(sqftNum / 125)),
@@ -123,11 +123,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #831843, #be185d)',
       advantages: ['Upper floor privacy for bedrooms', 'Terrace gazebo & green lawn space', 'Dedicated home theater room'],
       rooms: [
-        { name: 'Ground Floor Living', size: `16' x 22'` },
-        { name: 'First Floor Family Lounge', size: `14' x 16'` },
-        { name: 'Master Bedroom Suite', size: `15' x 16'` },
-        { name: 'Bedroom 2 & 3', size: `12' x 14' Each` },
-        { name: 'Roof Terrace Garden', size: `20' x 25'` }
+        { name: 'Ground Floor Living', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.35)}'` },
+        { name: 'First Floor Family Lounge', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Master Bedroom Suite', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Bedroom 2 & 3', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}' Each` },
+        { name: 'Roof Terrace Garden', size: `Full Roof Coverage` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.18))} - ${formatINR(Math.round(baseCostMax * 1.25))}`,
       colsCount: Math.max(12, Math.round(sqftNum / 100)),
@@ -144,11 +144,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #164e63, #0891b2)',
       advantages: ['Solves narrow plot parking constraints', 'High safety & security raised floor', 'Future floor expansion ready'],
       rooms: [
-        { name: 'Ground Stilt Parking', size: `18' x 35'` },
-        { name: 'First Floor Hall', size: `15' x 20'` },
-        { name: 'Master Bedroom', size: `13' x 14'` },
-        { name: 'Guest Room', size: `11' x 12'` },
-        { name: 'Semi-Open Utility Terrace', size: `10' x 15'` }
+        { name: 'Ground Stilt Parking', size: `${Math.round(widthNum * 1.0)}' x ${Math.round(depthNum * 0.8)}'` },
+        { name: 'First Floor Hall', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.3)}'` },
+        { name: 'Master Bedroom', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Guest Room', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Semi-Open Utility Terrace', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.15)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.12))} - ${formatINR(Math.round(baseCostMax * 1.15))}`,
       colsCount: Math.max(10, Math.round(sqftNum / 105)),
@@ -165,10 +165,10 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #064e3b, #059669)',
       advantages: ['Generates monthly rental income', 'Separate electricity & water meters', 'Private owner entrance from side staircase'],
       rooms: [
-        { name: 'Ground Rental 1BHK Unit', size: `550 sq ft Complete Unit` },
-        { name: 'Upper Owner 2BHK Residence', size: `650 sq ft Complete Unit` },
-        { name: 'Dual Parking Bays', size: `12' x 16'` },
-        { name: 'Common Stairwell', size: `6' x 12'` }
+        { name: 'Ground Rental 1BHK Unit', size: `${Math.round(sqftNum * 0.4)} sq ft Complete Unit` },
+        { name: 'Upper Owner 2BHK Residence', size: `${Math.round(sqftNum * 0.6)} sq ft Complete Unit` },
+        { name: 'Dual Parking Bays', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Common Stairwell', size: `${Math.round(widthNum * 0.4)}' x ${Math.round(depthNum * 0.15)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.08))} - ${formatINR(Math.round(baseCostMax * 1.12))}`,
       colsCount: Math.max(12, Math.round(sqftNum / 100)),
@@ -185,9 +185,9 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #365314, #65a30d)',
       advantages: ['Cuts electricity bills by 60%', 'Rainwater harvesting tank built-in', 'Thermal comfort all seasons'],
       rooms: [
-        { name: 'Naturally Lit Living Room', size: `15' x 16'` },
-        { name: 'Solar Kitchen & Dining', size: `11' x 14'` },
-        { name: 'Eco Master Bedroom', size: `12' x 14'` },
+        { name: 'Naturally Lit Living Room', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.3)}'` },
+        { name: 'Solar Kitchen & Dining', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Eco Master Bedroom', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}'` },
         { name: 'Rooftop Solar Deck', size: `Full Roof Coverage` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.04))} - ${formatINR(Math.round(baseCostMax * 1.06))}`,
@@ -205,10 +205,10 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #881337, #e11d48)',
       advantages: ['Fastest completion time (under 4 months)', 'Minimal material wastage', 'Strong structural RCC frame'],
       rooms: [
-        { name: 'Compact Living Room', size: `13' x 15'` },
-        { name: 'Smart Dining & Kitchenette', size: `10' x 12'` },
-        { name: 'Master Bedroom', size: `11' x 13'` },
-        { name: 'Bedroom 2', size: `10' x 11'` }
+        { name: 'Compact Living Room', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.3)}'` },
+        { name: 'Smart Dining & Kitchenette', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Master Bedroom', size: `${Math.round(widthNum * 0.85)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Bedroom 2', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 0.88))} - ${formatINR(Math.round(baseCostMax * 0.92))}`,
       colsCount: Math.max(8, Math.round(sqftNum / 130)),
@@ -225,11 +225,11 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
       elevationPreviewBg: 'linear-gradient(135deg, #311b92, #512da8)',
       advantages: ['Resort style living experience', 'Spacious master suite with bath tub', 'Smart home automation ready'],
       rooms: [
-        { name: 'Double Height Living Room', size: `18' x 24'` },
-        { name: 'Private Lap Pool & Deck', size: `12' x 25'` },
-        { name: 'Master Presidential Suite', size: `16' x 18'` },
-        { name: 'Guest Villa Rooms', size: `14' x 15' Each` },
-        { name: 'Modular German Kitchen', size: `12' x 15'` }
+        { name: 'Double Height Living Room', size: `${Math.round(widthNum * 0.95)}' x ${Math.round(depthNum * 0.35)}'` },
+        { name: 'Private Lap Pool & Deck', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` },
+        { name: 'Master Presidential Suite', size: `${Math.round(widthNum * 0.9)}' x ${Math.round(depthNum * 0.25)}'` },
+        { name: 'Guest Villa Rooms', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}' Each` },
+        { name: 'Modular German Kitchen', size: `${Math.round(widthNum * 0.8)}' x ${Math.round(depthNum * 0.2)}'` }
       ],
       costRange: `${formatINR(Math.round(baseCostMin * 1.35))} - ${formatINR(Math.round(baseCostMax * 1.48))}`,
       colsCount: Math.max(14, Math.round(sqftNum / 90)),
@@ -267,11 +267,11 @@ function generateSvgBlueprint(template, sqft, width, depth) {
 
       <rect x="35" y="35" width="200" height="130" fill="rgba(56,189,248,0.06)" stroke="${color}" stroke-width="1.5" />
       <text x="135" y="95" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">LIVING & DINING</text>
-      <text x="135" y="112" fill="${color}" font-size="10" text-anchor="middle">${Math.round(width * 0.55)}' x ${Math.round(depth * 0.38)}'</text>
+      <text x="135" y="112" fill="${color}" font-size="10" text-anchor="middle">${Math.round(width * 0.9)}' x ${Math.round(depth * 0.3)}'</text>
 
       <rect x="245" y="35" width="120" height="130" fill="rgba(168,85,247,0.06)" stroke="${color}" stroke-width="1.5" />
       <text x="305" y="95" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">MASTER BED</text>
-      <text x="305" y="112" fill="#a855f7" font-size="10" text-anchor="middle">${Math.round(width * 0.45)}' x ${Math.round(depth * 0.32)}'</text>
+      <text x="305" y="112" fill="#a855f7" font-size="10" text-anchor="middle">${Math.round(width * 0.85)}' x ${Math.round(depth * 0.25)}'</text>
 
       <rect x="35" y="173" width="130" height="72" fill="rgba(74,222,128,0.06)" stroke="${color}" stroke-width="1.5" />
       <text x="100" y="210" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">SE KITCHEN</text>
@@ -361,9 +361,9 @@ function generateStructuralGridSvg(template, width, depth) {
 
 // ==================== Floor Plans Page Template ====================
 export function floorPlansPage() {
-  const initialWidth = 30;
+  const initialWidth = 10;
   const initialDepth = 40;
-  const initialSqFt = 1200;
+  const initialSqFt = 400;
   const initialPlans = generate10IndianFloorPlans(initialSqFt, 'East', 'Auto', initialWidth, initialDepth);
 
   return `
@@ -372,17 +372,10 @@ export function floorPlansPage() {
         
         <!-- Header Banner (MakeMyHouse Style) -->
         <div style="text-align:center;max-width:880px;margin:0 auto 36px">
-          <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:99px;margin-bottom:16px">
-            <i class="fas fa-house-chimney" style="color:var(--primary)"></i>
-            <span style="color:var(--primary);font-weight:700;font-size:0.85rem">MAKEMYHOUSE ARCHITECTURAL & DESIGN SERVICES</span>
-          </div>
-          <h1 style="font-size:2.2rem;margin-bottom:12px;letter-spacing:-0.5px">
+          <h1 style="font-size:2.2rem;margin-bottom:24px;letter-spacing:-0.5px">
             Online House Plans, 3D Elevation & Structural Drawings <br>
             <span style="background:linear-gradient(135deg,var(--primary),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Search By Plot Dimensions & Vastu Direction</span>
           </h1>
-          <p class="text-muted" style="font-size:1.02rem;line-height:1.6">
-            Search by plot dimension (Width x Length in Ft), Vastu direction, or BHK configuration. Get <strong>10 executable Indian floor plan blueprints, 3D front elevations, and RCC structural drawings</strong> tailored for your exact land plot.
-          </p>
         </div>
 
         <!-- MakeMyHouse Dimension & Direction Control Panel -->
@@ -393,14 +386,15 @@ export function floorPlansPage() {
             <div style="margin-bottom:20px">
               <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
                 <span><i class="fas fa-ruler-combined" style="color:var(--primary);margin-right:6px"></i> Search by Popular Plot Dimensions (Ft):</span>
-                <strong style="color:var(--gold);font-size:1.05rem" id="sqftDisplayValue">30 ft x 40 ft (1200 Sq Ft)</strong>
+                <strong style="color:var(--gold);font-size:1.05rem" id="sqftDisplayValue">10 ft x 40 ft (400 Sq Ft)</strong>
               </label>
               <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+                <button type="button" class="btn btn-primary btn-sm dim-preset-btn active" data-width="10" data-depth="40">10 x 40 (400 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="15" data-depth="40">15 x 40 (600 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="20" data-depth="40">20 x 40 (800 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="20" data-depth="50">20 x 50 (1000 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="25" data-depth="50">25 x 50 (1250 SqFt)</button>
-                <button type="button" class="btn btn-primary btn-sm dim-preset-btn active" data-width="30" data-depth="40">30 x 40 (1200 SqFt)</button>
+                <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="30" data-depth="40">30 x 40 (1200 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="30" data-depth="50">30 x 50 (1500 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="35" data-depth="60">35 x 60 (2100 SqFt)</button>
                 <button type="button" class="btn btn-ghost btn-sm dim-preset-btn" data-width="40" data-depth="60">40 x 60 (2400 SqFt)</button>
@@ -414,7 +408,7 @@ export function floorPlansPage() {
               
               <div class="form-group" style="margin:0">
                 <label class="form-label">Frontage Width (Ft)</label>
-                <input type="number" id="inputPlotWidth" class="form-input" value="30" min="10" max="200" placeholder="e.g. 30">
+                <input type="number" id="inputPlotWidth" class="form-input" value="10" min="10" max="200" placeholder="e.g. 10">
               </div>
 
               <div class="form-group" style="margin:0">
@@ -425,7 +419,7 @@ export function floorPlansPage() {
               <div class="form-group" style="margin:0">
                 <label class="form-label"><i class="fas fa-compass" style="color:var(--gold);margin-right:6px"></i> 8 Vastu Directions</label>
                 <select id="inputFacing" class="form-select">
-                  <option value="East">East (Kithchen SE / Entry NE)</option>
+                  <option value="East">East (Kitchen SE / Entry NE)</option>
                   <option value="North">North (Kubera Money Corner)</option>
                   <option value="South">South (High Privacy Villa)</option>
                   <option value="West">West (Sunset Terrace View)</option>
@@ -464,7 +458,7 @@ export function floorPlansPage() {
           <div>
             <h3 style="margin:0;display:flex;align-items:center;gap:8px">
               <i class="fas fa-building" style="color:var(--primary)"></i> 
-              <span id="resultsHeaderTitle">10 Executable House Plans for 30 ft x 40 ft (1200 Sq Ft)</span>
+              <span id="resultsHeaderTitle">10 Executable House Plans for 10 ft x 40 ft (400 Sq Ft) · East Facing</span>
             </h3>
             <p class="text-muted" style="font-size:0.85rem;margin-top:2px">
               Includes 2D Floor Plan Blueprint, 3D Elevation Render, and Structural Engineering Grid for every option.

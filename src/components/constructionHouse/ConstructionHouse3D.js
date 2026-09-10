@@ -1153,7 +1153,7 @@ export class ConstructionHouse3D {
     beacon1.position.set(-1.6, 0.02, 2.1);
     this.safetyZoneGroup.add(beacon1);
 
-    const safetyLabel = this.createCADTextSprite('⚡ Hazard Zone Laser Geofence', 22, '#ef4444');
+    const safetyLabel = this.createCADTextSprite('Hazard Zone Laser Geofence', 22, '#ef4444');
     safetyLabel.position.set(-1.6, 1.2, 2.1);
     safetyLabel.scale.set(2.8, 0.75, 1);
     this.safetyZoneGroup.add(safetyLabel);
@@ -1629,26 +1629,6 @@ export class ConstructionHouse3D {
           btn.classList.add('active');
           this.setCategoryFilter(btn.dataset.category);
         });
-      });
-    }
-
-    const rotateBtn = this.container?.querySelector('#skillRotateToggleBtn');
-    if (rotateBtn) {
-      rotateBtn.addEventListener('click', () => {
-        this.isRotating = !this.isRotating;
-        rotateBtn.classList.toggle('paused', !this.isRotating);
-        const span = rotateBtn.querySelector('span');
-        if (span) span.textContent = this.isRotating ? 'Orbit: Active' : 'Orbit: Paused';
-      });
-    }
-
-    const resetBtn = this.container?.querySelector('#skillResetCamBtn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        this.mouse.targetX = 0;
-        this.mouse.targetY = 0;
-        this.mouse.x = 0;
-        this.mouse.y = 0;
       });
     }
   }

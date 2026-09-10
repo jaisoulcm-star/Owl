@@ -3,7 +3,7 @@ import { renderNavbar, renderBottomNav, renderFooter } from './components.js';
 import { showToast, formatCurrency } from './utils.js';
 import { homePage } from './pages/home.js';
 import { skillsPage } from './pages/skills.js';
-import { SkillSphere } from './components/skillSphere/SkillSphere.js';
+import { ConstructionHouse3D } from './components/constructionHouse/ConstructionHouse3D.js';
 import { aboutPage, projectsPage, contactPage, feedbackPage } from './pages/public.js';
 import { visionPage, insightsPage, resourcesPage, reportPage, morePage } from './pages/features.js';
 import { landAnalyzerPage } from './pages/landAnalyzer.js';
@@ -69,13 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
-      console.log('✅ User logged in:', user.email);
+      console.log('User logged in:', user.email);
     } else {
       console.log('⚠️ User logged out');
     }
   });
 
-  console.log('✅ Forzex Construction PWA ready with Google Satellite GIS API & Firebase Storage');
+  console.log('Forzex Construction PWA ready with Google Satellite GIS API & Firebase Storage');
 });
 
 // ==================== Service Worker ====================
@@ -124,7 +124,7 @@ function setupGlobalListeners() {
             activeSkillSphere.dispose();
             activeSkillSphere = null;
           }
-          activeSkillSphere = new SkillSphere({
+          activeSkillSphere = new ConstructionHouse3D({
             container: document.getElementById('skillSphereViewport')?.closest('section'),
             mountEl: mount,
             labelsOverlay: document.getElementById('skillLabelsOverlay'),
@@ -438,7 +438,7 @@ function setupVisionPageHandlers() {
     });
 
     if (result.success) {
-      showToast('✅ Geotagged site saved to Firebase backend storage!', 'success');
+      showToast('Geotagged site saved to Firebase backend storage!', 'success');
       renderFirebaseGisList('firebaseGisSitesContainer');
     }
   });
@@ -480,6 +480,8 @@ function renderGoogleSatelliteMap(elementId, lat, lon, label) {
   }
 
   setTimeout(() => {
+    if (!document.getElementById(elementId)) return;
+    
     const map = L.map(elementId, { zoomControl: true }).setView([lat, lon], 16);
     if (elementId === 'visionMap') visionMapInstance = map;
     if (elementId === 'siteMap') siteMapInstance = map;
@@ -509,10 +511,10 @@ function renderGoogleSatelliteMap(elementId, lat, lon, label) {
 
     // Layer control selector for Satellite / GIS / Terrain
     const baseLayers = {
-      '🛰️ Google Satellite Hybrid': googleSatelliteHybrid,
-      '📷 Google High-Res Aerial': googleSatelliteAerial,
-      '⛰️ Google GIS Terrain': googleGisTerrain,
-      '🗺️ OpenStreetMap': openStreetMap
+      '<i class="fas fa-satellite"></i> Google Satellite Hybrid': googleSatelliteHybrid,
+      '<i class="fas fa-camera"></i> Google High-Res Aerial': googleSatelliteAerial,
+      '<i class="fas fa-mountain"></i> Google GIS Terrain': googleGisTerrain,
+      '<i class="fas fa-map"></i> OpenStreetMap': openStreetMap
     };
     L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
 
@@ -551,7 +553,7 @@ function initWeatherAndMapHub() {
     });
 
     if (res.success) {
-      showToast('✅ Saved site location to Firebase!', 'success');
+      showToast('Saved site location to Firebase!', 'success');
       renderFirebaseGisList('moreFirebaseGisContainer');
     }
   });
@@ -789,6 +791,9 @@ function initLandAnalyzerMap() {
   landSetbackFt = parseInt(document.getElementById('setbackRange')?.value || '5', 10);
 
   setTimeout(() => {
+    // Ensure the element still exists before initializing
+    if (!document.getElementById('landAnalyzerMap')) return;
+    
     // Center initially on Austin TX / default site lat/lon
     const defaultCenter = [30.2672, -97.7431];
     const map = L.map('landAnalyzerMap', { zoomControl: true }).setView(defaultCenter, 18);
@@ -812,9 +817,9 @@ function initLandAnalyzerMap() {
     googleSatHybrid.addTo(map);
 
     L.control.layers({
-      '🛰️ Google Satellite Hybrid': googleSatHybrid,
-      '📷 Google High-Res Aerial': googleSatAerial,
-      '🗺️ OpenStreetMap': openStreetMap
+      '<i class="fas fa-satellite"></i> Google Satellite Hybrid': googleSatHybrid,
+      '<i class="fas fa-camera"></i> Google High-Res Aerial': googleSatAerial,
+      '<i class="fas fa-map"></i> OpenStreetMap': openStreetMap
     }, null, { position: 'topright' }).addTo(map);
 
     // Map Click Listener to add land border points
@@ -888,7 +893,7 @@ function initLandAnalyzerMap() {
       });
 
       if (res.success) {
-        showToast('✅ Land plot boundary saved to Firebase!', 'success');
+        showToast('Land plot boundary saved to Firebase!', 'success');
         renderFirebaseLandPlotsList();
       }
     });
@@ -1054,7 +1059,7 @@ function recalculateLandPlotGeometry() {
       // Build Turf closed polygon coordinates [lon, lat]
       const closedCoords = landBorderPoints.map(p => [p.lon, p.lat]);
       closedCoords.push([landBorderPoints[0].lon, landBorderPoints[0].lat]); // close ring
-      const turfOuterPoly = turf.polygon([closedCoords]);
+      const turfOuterPoly = turf.rewind(turf.polygon([closedCoords]), { reverse: false });
 
       // Calculate negative buffer distance in kilometers for inward contraction
       const setbackMeters = landSetbackFt * 0.3048;
@@ -1062,23 +1067,17 @@ function recalculateLandPlotGeometry() {
 
       const bufferedTurf = turf.buffer(turfOuterPoly, bufferDistKm, { units: 'kilometers' });
 
-      if (bufferedTurf && bufferedTurf.geometry && bufferedTurf.geometry.coordinates.length > 0) {
-        // Handle Polygon or MultiPolygon
-        let innerRing = bufferedTurf.geometry.coordinates[0];
-        if (bufferedTurf.geometry.type === 'MultiPolygon') {
-          innerRing = bufferedTurf.geometry.coordinates[0][0];
-        }
-
-        // Turf coordinates are [lon, lat], convert to Leaflet [lat, lon]
-        const usableLatLngs = innerRing.map(coord => [coord[1], coord[0]]);
-
+      if (bufferedTurf && bufferedTurf.geometry) {
         // Render Inner Usable Construction Polygon (Emerald Green fill & dashed border)
-        landUsablePolygon = L.polygon(usableLatLngs, {
-          color: '#10b981',
-          weight: 3,
-          fillColor: '#10b981',
-          fillOpacity: 0.38,
-          dashArray: '6, 6'
+        // L.geoJSON natively supports complex MultiPolygons, holes, etc. from Turf.
+        landUsablePolygon = L.geoJSON(bufferedTurf, {
+          style: {
+            color: '#10b981',
+            weight: 3,
+            fillColor: '#10b981',
+            fillOpacity: 0.38,
+            dashArray: '6, 6'
+          }
         }).addTo(landMapInstance);
 
         // Recalculate exact usable area from Turf inner polygon
@@ -1125,11 +1124,17 @@ function computePlotStats() {
   let perimeterM = 0;
 
   if (window.turf) {
-    const closedCoords = landBorderPoints.map(p => [p.lon, p.lat]);
-    closedCoords.push([landBorderPoints[0].lon, landBorderPoints[0].lat]);
-    const turfPoly = turf.polygon([closedCoords]);
-    totalSqM = turf.area(turfPoly);
-    perimeterM = turf.length(turfPoly, { units: 'meters' });
+    try {
+      const closedCoords = landBorderPoints.map(p => [p.lon, p.lat]);
+      closedCoords.push([landBorderPoints[0].lon, landBorderPoints[0].lat]);
+      const turfPoly = turf.rewind(turf.polygon([closedCoords]), { reverse: false });
+      totalSqM = turf.area(turfPoly);
+      perimeterM = turf.length(turfPoly, { units: 'meters' });
+    } catch(err) {
+      console.warn("Turf stats error:", err);
+      totalSqM = calculateShoelaceArea(landBorderPoints);
+      perimeterM = calculatePerimeterMeters(landBorderPoints);
+    }
   } else {
     // Geodesic Shoelace fallback formula
     totalSqM = calculateShoelaceArea(landBorderPoints);
@@ -1582,8 +1587,8 @@ function initBackendConsolePage() {
     });
 
     if (result.success) {
-      showToast(`✅ Document saved to Firebase Firestore [ID: ${result.id || 'Saved'}]`, 'success');
-      appendBackendConsoleLog(`✅ Document successfully written to Firestore. ID: ${result.id}`, 'SUCCESS');
+      showToast(`Document saved to Firebase Firestore [ID: ${result.id || 'Saved'}]`, 'success');
+      appendBackendConsoleLog(`Document successfully written to Firestore. ID: ${result.id}`, 'SUCCESS');
       e.target.reset();
       // Switch tab to the target collection and render
       document.querySelectorAll('#collectionTabGroup .collection-tab').forEach(t => {
@@ -1611,7 +1616,7 @@ function initBackendConsolePage() {
     const latStat = document.getElementById('statLatency');
     if (latStat) latStat.textContent = `${latency} ms`;
 
-    showToast(`✅ Firebase test passed in ${latency}ms!`, 'success');
+    showToast(`Firebase test passed in ${latency}ms!`, 'success');
     appendBackendConsoleLog(`[Firestore OK] Write-verify test passed in ${latency}ms (Doc ID: ${testResult.id})`, 'SUCCESS');
   });
 
@@ -1795,7 +1800,7 @@ function setupWorkspaceAiVideoGenerator() {
     if (resultCard) resultCard.style.display = 'none';
     if (loadingSub) loadingSub.textContent = `Compiling 3D physics, camera flight paths, and architectural daylight shaders for "${name}" in ${location}...`;
 
-    showToast(`⚡ AI Neural Engine compiling 3D video pass for ${name}...`, 'info');
+    showToast(`AI Neural Engine compiling 3D video pass for ${name}...`, 'info');
 
     setTimeout(() => {
       if (loadingBox) loadingBox.style.display = 'none';
@@ -1819,7 +1824,7 @@ function setupWorkspaceAiVideoGenerator() {
       }
 
       if (resultCard) resultCard.style.display = 'block';
-      showToast(`🎉 Project "${name}" created & AI 3D Video Pass Generated!`, 'success');
+      showToast(`Project "${name}" created & AI 3D Video Pass Generated!`, 'success');
 
       resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 1500);
@@ -1984,7 +1989,7 @@ function initMaterialBrandStudio() {
 
   document.getElementById('exportBrandListBtn')?.addEventListener('click', () => {
     if (selectedBrandsStore.length === 0) return;
-    showToast(`📄 Exporting ${selectedBrandsStore.length} selected material brand specifications...`, 'success');
+    showToast(`Exporting ${selectedBrandsStore.length} selected material brand specifications...`, 'success');
   });
 
   renderGrid();

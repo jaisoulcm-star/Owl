@@ -5,15 +5,8 @@ export function landAnalyzerPage() {
     <section class="section">
       <div class="container" style="max-width:1150px">
         <!-- Header Banner -->
-        <div class="text-center animate-in">
-          <span class="badge badge-primary" style="margin-bottom:12px">
-            <i class="fas fa-draw-polygon" style="margin-right:6px;color:var(--gold)"></i> GIS Spatial Boundary Engine
-          </span>
+        <div class="text-center animate-in" style="margin-bottom:24px">
           <h1>Irregular Land Border & Usable Construction Area</h1>
-          <p style="margin-top:8px;margin-bottom:24px;max-width:850px;margin-left:auto;margin-right:auto">
-            Mark boundary points ($P_1, P_2, \\dots, P_n$) for any regular or irregular plot of land. The app automatically calculates the outer plot border, side lengths, total acreage, applies customizable setback buffers, and visualizes the exact usable land area for construction.
-          </p>
-
         </div>
 
         <!-- Main Workspace Grid -->
@@ -65,11 +58,11 @@ export function landAnalyzerPage() {
                     <i class="fas fa-shapes" style="color:var(--primary);margin-right:6px"></i> Load Irregular Plot Presets
                   </label>
                   <select id="presetShapeSelect" class="form-select" style="padding:8px 12px;font-size:0.85rem">
-                    <option value="custom">✏️ Custom Click Mode (Click Map)</option>
-                    <option value="lshape">📐 Irregular L-Shaped Parcel</option>
-                    <option value="trapezoid">🔷 Irregular Trapezoid Lot</option>
-                    <option value="corner">📐 Triangular Corner Plot</option>
-                    <option value="pentagon">🛑 Irregular 5-Sided Polygon</option>
+                    <option value="custom">Custom Click Mode (Click Map)</option>
+                    <option value="lshape">Irregular L-Shaped Parcel</option>
+                    <option value="trapezoid">Irregular Trapezoid Lot</option>
+                    <option value="corner">Triangular Corner Plot</option>
+                    <option value="pentagon">Irregular 5-Sided Polygon</option>
                   </select>
                 </div>
 

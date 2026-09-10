@@ -103,33 +103,6 @@ export function contactPage() {
     <section class="section">
       <div class="container" style="max-width:900px">
         <h1 class="text-center animate-in">Get in Touch</h1>
-        <p class="text-center animate-in" style="margin-top:8px;margin-bottom:40px">We'd love to hear from you. Reach out for project enquiries or partnerships.</p>
-        <div class="grid grid-2">
-          <div class="animate-in delay-1">
-            <div class="card" style="margin-bottom:16px">
-              <h4><i class="fas fa-building" style="margin-right:8px"></i> Office</h4>
-              <p style="margin-top:8px">123 Construction Avenue<br>Nairobi, Kenya</p>
-            </div>
-            <div class="card" style="margin-bottom:16px">
-              <h4><i class="fas fa-envelope" style="margin-right:8px"></i> Email</h4>
-              <p style="margin-top:8px">info@forzexconstruction.com</p>
-            </div>
-            <div class="card">
-              <h4><i class="fas fa-phone" style="margin-right:8px"></i> Phone</h4>
-              <p style="margin-top:8px">+254 700 000 000<br>Mon–Fri 09:00–18:00</p>
-            </div>
-          </div>
-          <div class="card animate-in delay-2">
-            <h3 style="margin-bottom:16px">Send a Message</h3>
-            <form id="contactForm">
-              <div class="form-group"><label class="form-label">Name</label><input class="form-input" placeholder="Your name" required></div>
-              <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="you@example.com" required></div>
-              <div class="form-group"><label class="form-label">Subject</label><input class="form-input" placeholder="Project enquiry" required></div>
-              <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell us about your project..." required></textarea></div>
-              <button type="submit" class="btn btn-primary btn-block">Send Message</button>
-            </form>
-          </div>
-        </div>
       </div>
     </section>`;
 }

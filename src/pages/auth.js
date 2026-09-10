@@ -114,8 +114,7 @@ export function workspacePage() {
   return `
     <section class="section">
       <div class="container" style="max-width:950px">
-        <h1 class="text-center animate-in">Project Workspace & AI Visualization Studio</h1>
-        <p class="text-center animate-in" style="margin-top:8px;margin-bottom:36px">Enter your project specifications below. Our AI engine will create your project and generate a custom 3D construction short video based on your input.</p>
+        <h1 class="text-center animate-in" style="margin-bottom:36px">Project Workspace & AI Visualization Studio</h1>
 
         <!-- Create New Project & AI Construction Video Generator Card -->
         <div class="card animate-in" style="background:rgba(15,23,42,0.85);border:1px solid rgba(56,189,248,0.35);box-shadow:0 12px 36px rgba(0,0,0,0.6)">
@@ -125,11 +124,7 @@ export function workspacePage() {
                 <i class="fas fa-rocket" style="color:var(--primary)"></i> 
                 Create New Project & Generate AI 3D Short Video
               </h3>
-              <p class="text-muted" style="font-size:0.85rem;margin-top:2px">
-                Provide your project details to create your project entry and generate a matching 3D short video walkthrough.
-              </p>
             </div>
-            <span class="badge badge-accent" style="padding:6px 14px"><i class="fas fa-wand-magic-sparkles"></i> Content-Based AI Video</span>
           </div>
 
           <form id="projectForm" style="margin-top:16px">
@@ -143,11 +138,11 @@ export function workspacePage() {
                 <label class="form-label">Project Type & Architecture</label>
                 <select class="form-select" id="projType" required>
                   <option value="">Select Type</option>
-                  <option value="Commercial High-Rise Complex">🏢 Commercial High-Rise Complex</option>
-                  <option value="Residential Luxury Villa & Apartments">🏡 Residential Luxury Villa & Apartments</option>
-                  <option value="Industrial Smart Factory & Warehouse">🏬 Industrial Smart Factory & Warehouse</option>
-                  <option value="Infrastructure Highway & Bridge Pass">🛣️ Infrastructure Highway & Bridge Pass</option>
-                  <option value="Eco-Friendly Green Building Resort">🌿 Eco-Friendly Green Building Resort</option>
+                  <option value="Commercial High-Rise Complex">Commercial High-Rise Complex</option>
+                  <option value="Residential Luxury Villa & Apartments">Residential Luxury Villa & Apartments</option>
+                  <option value="Industrial Smart Factory & Warehouse">Industrial Smart Factory & Warehouse</option>
+                  <option value="Infrastructure Highway & Bridge Pass">Infrastructure Highway & Bridge Pass</option>
+                  <option value="Eco-Friendly Green Building Resort">Eco-Friendly Green Building Resort</option>
                 </select>
               </div>
               <div class="form-group">
@@ -171,10 +166,10 @@ export function workspacePage() {
               <div class="form-group">
                 <label class="form-label"><i class="fas fa-layer-group" style="color:var(--accent);margin-right:6px"></i> AI Rendering Priority</label>
                 <select id="projPriority" class="form-select">
-                  <option value="High Priority (1080p Fast Render)">⚡ High Priority (1080p Fast Render)</option>
-                  <option value="Cinematic Priority (4K Ray-Tracing)">🎬 Cinematic Priority (4K Ray-Tracing)</option>
-                  <option value="Structural Priority (Physics & Steel Simulation)">🏗️ Structural Priority (Physics Simulation)</option>
-                  <option value="Environmental Priority (Daylight & Solar Shadows)">☀️ Environmental Priority (Daylight Pass)</option>
+                  <option value="High Priority (1080p Fast Render)">High Priority (1080p Fast Render)</option>
+                  <option value="Cinematic Priority (4K Ray-Tracing)">Cinematic Priority (4K Ray-Tracing)</option>
+                  <option value="Structural Priority (Physics & Steel Simulation)">Structural Priority (Physics Simulation)</option>
+                  <option value="Environmental Priority (Daylight & Solar Shadows)">Environmental Priority (Daylight Pass)</option>
                 </select>
               </div>
               <div class="form-group">

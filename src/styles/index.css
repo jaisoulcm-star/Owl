@@ -912,15 +912,6 @@ select option:hover,
   margin-bottom: 24px;
 }
 
-.skill-hud-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
 .skill-hud-badge {
   display: inline-flex;
   align-items: center;
@@ -961,39 +952,6 @@ select option:hover,
   color: #38bdf8;
   text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
   text-transform: uppercase;
-}
-
-.skill-hud-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.hud-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(10px);
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.hud-btn:hover {
-  border-color: var(--primary);
-  color: #fff;
-  background: rgba(56, 189, 248, 0.15);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
-}
-
-.hud-btn.paused {
-  border-color: var(--warning);
-  color: var(--warning);
 }
 
 .skill-hud-headline {
@@ -1426,5 +1384,6 @@ select option:hover,
     font-size: 1.55rem;
   }
 }
+
 
 
