@@ -4,6 +4,8 @@
 
 import * as THREE from 'three';
 import { CONSTRUCTION_FEATURES, getFeatureById } from './constructionFeaturesData.js';
+import { getFloorPlan3DWalkthrough } from '../floorPlanWalkthrough/FloorPlan3DWalkthroughModal.js';
+import { generate10IndianFloorPlans } from '../../pages/floorPlans.js';
 
 export class ConstructionHouse3D {
   constructor(options = {}) {
@@ -1481,9 +1483,33 @@ export class ConstructionHouse3D {
           </div>
         `;
       }
+      else if (feature.id === 'interior-design') {
+        customWidget = `
+          <div style="width:100%;margin-bottom:12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:12px">
+            <div style="font-size:0.82rem;color:#fff;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:6px">
+              <i class="fas fa-vr-cardboard" style="color:var(--primary)"></i> 3D Architectural Walkthrough Models Ready
+            </div>
+            <p style="font-size:0.76rem;color:#94a3b8;margin-bottom:10px;line-height:1.4">
+              Explore photorealistic rooms, furniture layouts, day/night lighting simulation, and first-person walkthrough.
+            </p>
+            <button id="btnLaunch3DWalkthroughFromHouse" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;box-shadow:0 0 16px rgba(56,189,248,0.4)">
+              <i class="fas fa-play" style="margin-right:6px"></i> Launch 3D House Walkthrough
+            </button>
+          </div>
+        `;
+      }
 
       const tagsHtml = feature.tags.map(t => `<span class="skill-tag">${t}</span>`).join('');
       tagsEl.innerHTML = customWidget + tagsHtml;
+
+      const launchWalkthroughBtn = tagsEl.querySelector('#btnLaunch3DWalkthroughFromHouse');
+      if (launchWalkthroughBtn) {
+        launchWalkthroughBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const samplePlan = generate10IndianFloorPlans()[0];
+          getFloorPlan3DWalkthrough().open(samplePlan);
+        });
+      }
 
       tagsEl.querySelectorAll('.paint-swatch-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {

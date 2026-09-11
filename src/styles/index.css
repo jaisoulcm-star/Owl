@@ -1385,5 +1385,826 @@ select option:hover,
   }
 }
 
+/* ==================== Floor Plan Architectural Blueprints Styling ==================== */
+.floor-plan-card {
+  padding: 24px;
+  background: rgba(11, 18, 33, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+}
 
+.floor-plan-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(56, 189, 248, 0.12);
+}
+
+.blueprint-viewport-box {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #060b14;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.blueprint-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  user-select: none;
+}
+
+.blueprint-mode-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  background: rgba(7, 13, 24, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Specific architectural themes for each floor plan card */
+#floor-plan-card-plan-1 {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(175deg, rgba(8, 17, 34, 0.96) 0%, rgba(5, 11, 22, 0.97) 100%);
+}
+#floor-plan-card-plan-1:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(56, 189, 248, 0.18);
+}
+
+#floor-plan-card-plan-2 {
+  border-color: rgba(168, 85, 247, 0.3);
+  background: linear-gradient(175deg, rgba(19, 14, 38, 0.96) 0%, rgba(9, 7, 24, 0.97) 100%);
+}
+#floor-plan-card-plan-2:hover {
+  border-color: rgba(168, 85, 247, 0.65);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(168, 85, 247, 0.2);
+}
+#floor-plan-card-plan-2 .blueprint-viewport-box {
+  border-color: rgba(168, 85, 247, 0.35);
+  background: #09071a;
+}
+#floor-plan-card-plan-2 .blueprint-mode-tag {
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+#floor-plan-card-plan-3 {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: linear-gradient(175deg, rgba(6, 26, 20, 0.96) 0%, rgba(4, 15, 12, 0.97) 100%);
+}
+#floor-plan-card-plan-3:hover {
+  border-color: rgba(74, 222, 128, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(74, 222, 128, 0.18);
+}
+#floor-plan-card-plan-3 .blueprint-viewport-box {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: #04120e;
+}
+#floor-plan-card-plan-3 .blueprint-mode-tag {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+#floor-plan-card-plan-4 {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: linear-gradient(175deg, rgba(28, 18, 6, 0.96) 0%, rgba(14, 9, 3, 0.97) 100%);
+}
+#floor-plan-card-plan-4:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(245, 158, 11, 0.2);
+}
+#floor-plan-card-plan-4 .blueprint-viewport-box {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: #110b04;
+}
+#floor-plan-card-plan-4 .blueprint-mode-tag {
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+#floor-plan-card-plan-5 {
+  border-color: rgba(236, 72, 153, 0.3);
+  background: linear-gradient(175deg, rgba(28, 8, 20, 0.96) 0%, rgba(15, 4, 11, 0.97) 100%);
+}
+#floor-plan-card-plan-5:hover {
+  border-color: rgba(236, 72, 153, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(236, 72, 153, 0.2);
+}
+#floor-plan-card-plan-5 .blueprint-viewport-box {
+  border-color: rgba(236, 72, 153, 0.35);
+  background: #13040e;
+}
+#floor-plan-card-plan-5 .blueprint-mode-tag {
+  color: #f472b6;
+  border-color: rgba(236, 72, 153, 0.4);
+}
+
+#floor-plan-card-plan-6 {
+  border-color: rgba(6, 182, 212, 0.3);
+  background: linear-gradient(175deg, rgba(6, 23, 30, 0.96) 0%, rgba(3, 13, 18, 0.97) 100%);
+}
+#floor-plan-card-plan-6:hover {
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(6, 182, 212, 0.2);
+}
+#floor-plan-card-plan-6 .blueprint-viewport-box {
+  border-color: rgba(6, 182, 212, 0.35);
+  background: #031117;
+}
+#floor-plan-card-plan-6 .blueprint-mode-tag {
+  color: #22d3ee;
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+#floor-plan-card-plan-7 {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: linear-gradient(175deg, rgba(5, 25, 18, 0.96) 0%, rgba(3, 14, 10, 0.97) 100%);
+}
+#floor-plan-card-plan-7:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(16, 185, 129, 0.2);
+}
+#floor-plan-card-plan-7 .blueprint-viewport-box {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: #03120c;
+}
+#floor-plan-card-plan-7 .blueprint-mode-tag {
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+#floor-plan-card-plan-8 {
+  border-color: rgba(132, 204, 22, 0.3);
+  background: linear-gradient(175deg, rgba(16, 26, 4, 0.96) 0%, rgba(8, 14, 2, 0.97) 100%);
+}
+#floor-plan-card-plan-8:hover {
+  border-color: rgba(132, 204, 22, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(132, 204, 22, 0.2);
+}
+#floor-plan-card-plan-8 .blueprint-viewport-box {
+  border-color: rgba(132, 204, 22, 0.35);
+  background: #091002;
+}
+#floor-plan-card-plan-8 .blueprint-mode-tag {
+  color: #a3e635;
+  border-color: rgba(132, 204, 22, 0.4);
+}
+
+#floor-plan-card-plan-9 {
+  border-color: rgba(244, 63, 94, 0.3);
+  background: linear-gradient(175deg, rgba(29, 8, 14, 0.96) 0%, rgba(16, 4, 8, 0.97) 100%);
+}
+#floor-plan-card-plan-9:hover {
+  border-color: rgba(244, 63, 94, 0.6);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 28px rgba(244, 63, 94, 0.2);
+}
+#floor-plan-card-plan-9 .blueprint-viewport-box {
+  border-color: rgba(244, 63, 94, 0.35);
+  background: #14040a;
+}
+#floor-plan-card-plan-9 .blueprint-mode-tag {
+  color: #fb7185;
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+#floor-plan-card-plan-10 {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: linear-gradient(175deg, rgba(14, 12, 38, 0.96) 0%, rgba(7, 6, 24, 0.97) 100%);
+}
+#floor-plan-card-plan-10:hover {
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 32px rgba(99, 102, 241, 0.25);
+}
+#floor-plan-card-plan-10 .blueprint-viewport-box {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: #08071c;
+}
+#floor-plan-card-plan-10 .blueprint-mode-tag {
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+/* ==================== 3D Model Walkthrough & Interactive Viewport Styles ==================== */
+.blueprint-viewport-box {
+  cursor: pointer;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.blueprint-viewport-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.25);
+}
+
+.blueprint-viewport-box svg {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+  transform-origin: center center;
+}
+
+.blueprint-viewport-box:hover svg {
+  transform: scale(1.02);
+  filter: contrast(1.08) brightness(1.05);
+}
+
+/* Specific 3D Model Walkthrough styling for the selected cards & SVG elements */
+#floor-plan-card-plan-1 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-2 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-3 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-4 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-5 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-9 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-7 > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(2) {
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+#floor-plan-card-plan-1:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-2:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-3:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-4:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-5:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-9:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(1),
+#floor-plan-card-plan-7:hover > div:nth-of-type(2) > svg:nth-of-type(1) > rect:nth-of-type(2) {
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+}
+
+#floor-plan-card-plan-6 > div:nth-of-type(2) > svg:nth-of-type(1),
+#floor-plan-card-plan-7 > div:nth-of-type(2) > svg:nth-of-type(1),
+#floor-plan-card-plan-8 > div:nth-of-type(2) > svg:nth-of-type(1),
+#floor-plan-card-plan-10 > div:nth-of-type(2) > svg:nth-of-type(1) {
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+#floor-plan-card-plan-6:hover > div:nth-of-type(2) > svg:nth-of-type(1),
+#floor-plan-card-plan-7:hover > div:nth-of-type(2) > svg:nth-of-type(1),
+#floor-plan-card-plan-8:hover > div:nth-of-type(2) > svg:nth-of-type(1),
+#floor-plan-card-plan-10:hover > div:nth-of-type(2) > svg:nth-of-type(1) {
+  filter: drop-shadow(0 0 16px rgba(0, 242, 254, 0.3));
+}
+
+/* Floating 3D Walkthrough Trigger Badge inside Viewport */
+.viewport-walkthrough-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 3;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #fff;
+  padding: 6px 13px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 10px rgba(56, 189, 248, 0.2);
+  transition: all 0.25s ease;
+}
+
+.viewport-walkthrough-btn:hover {
+  background: linear-gradient(135deg, var(--primary), #0284c7);
+  color: #030712;
+  border-color: #38bdf8;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.6);
+  transform: scale(1.05);
+}
+
+.viewport-walkthrough-btn i {
+  color: var(--primary);
+  transition: color 0.2s ease;
+}
+
+.viewport-walkthrough-btn:hover i {
+  color: #030712;
+}
+
+/* 3D Walkthrough Fullscreen Modal Interface */
+.floorplan-3d-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.floorplan-3d-modal.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.floorplan-3d-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.88);
+  backdrop-filter: blur(12px);
+}
+
+.floorplan-3d-window {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 840px;
+  background: #060d1a;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 36px rgba(56, 189, 248, 0.15);
+  overflow: hidden;
+}
+
+.floorplan-3d-header {
+  padding: 14px 20px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.floorplan-3d-badge {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.floorplan-3d-viewport-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #0d1e38 0%, #060d1a 100%);
+}
+
+.floorplan-3d-mount {
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.floorplan-3d-mount canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* HUD Camera Modes Buttons */
+.walkthrough-hud-camera-modes {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  background: rgba(10, 18, 34, 0.88);
+  backdrop-filter: blur(10px);
+  padding: 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.cam-mode-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.cam-mode-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cam-mode-btn.active {
+  background: var(--primary);
+  color: #030712;
+  border-color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+/* Room Waypoints Bar */
+.walkthrough-hud-waypoints {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 580px;
+  justify-content: flex-end;
+}
+
+.waypoint-pill {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.waypoint-pill:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.waypoint-pill.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.25));
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+/* Telemetry Box */
+.walkthrough-hud-telemetry {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(10, 18, 34, 0.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* Vastu Compass HUD */
+.walkthrough-compass-hud {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 10;
+  width: 60px;
+  height: 60px;
+  background: rgba(10, 18, 34, 0.85);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.compass-dial {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  transition: transform 0.1s linear;
+}
+
+.compass-n, .compass-e, .compass-s, .compass-w {
+  position: absolute;
+  font-size: 8px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.compass-n { top: 0; left: 50%; transform: translateX(-50%); color: #ef4444; }
+.compass-s { bottom: 0; left: 50%; transform: translateX(-50%); }
+.compass-e { right: 0; top: 50%; transform: translateY(-50%); }
+.compass-w { left: 0; top: 50%; transform: translateY(-50%); }
+
+.compass-needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 36px;
+  background: linear-gradient(to bottom, #ef4444 50%, #38bdf8 50%);
+  transform: translate(-50%, -50%);
+  border-radius: 1px;
+}
+
+/* Mobile D-Pad Virtual Joystick */
+.walkthrough-mobile-controls {
+  display: none;
+  position: absolute;
+  bottom: 80px;
+  right: 16px;
+  z-index: 10;
+  background: rgba(10, 18, 34, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.dpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  grid-template-rows: repeat(3, 40px);
+  gap: 4px;
+}
+
+.dpad-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.dpad-btn:active {
+  background: var(--primary);
+  color: #030712;
+}
+
+.dpad-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+/* Bottom Footer Strip */
+.floorplan-3d-footer {
+  padding: 12px 20px;
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .walkthrough-hud-waypoints {
+    top: auto;
+    bottom: 80px;
+    right: 10px;
+    left: 10px;
+    justify-content: center;
+  }
+  .walkthrough-hud-camera-modes {
+    left: 10px;
+    right: 10px;
+    justify-content: center;
+  }
+  .hide-mobile {
+    display: none;
+  }
+}
+
+/* VR Stereoscopic Split-Screen Viewport Styles */
+.walkthrough-vr-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  transition: opacity 0.25s ease;
+}
+
+.walkthrough-vr-overlay.hidden {
+  display: none;
+}
+
+/* Cardboard & Headset Center Divider */
+.vr-split-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+.vr-center-line {
+  width: 2px;
+  flex: 1;
+  background: linear-gradient(to bottom, transparent, rgba(192, 132, 252, 0.6) 15%, rgba(192, 132, 252, 0.6) 85%, transparent);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
+}
+
+.vr-center-notch {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #c084fc;
+  border-radius: 50%;
+  background: #060d1a;
+  margin: 10px 0;
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
+}
+
+/* Left & Right Eye Overlays */
+.vr-eye-hud {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.vr-eye-left {
+  left: 0;
+  width: 50%;
+}
+
+.vr-eye-right {
+  left: 50%;
+  width: 50%;
+}
+
+.vr-eye-badge {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #e9d5ff;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  border-radius: 12px;
+  padding: 3px 10px;
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Center Crosshair / Reticle for VR Focal Targeting */
+.vr-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.vr-reticle-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.vr-reticle-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(56, 189, 248, 0.6);
+  animation: vrRingRotate 20s linear infinite;
+}
+
+@keyframes vrRingRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Floating VR Control Bar */
+.vr-floating-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  pointer-events: auto;
+}
+
+.vr-controls-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  border-radius: 30px;
+  padding: 6px 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75), 0 0 20px rgba(168, 85, 247, 0.25);
+  backdrop-filter: blur(12px);
+  white-space: nowrap;
+}
+
+.vr-pill-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #f3e8ff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vr-ipd-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* VR Button Active Glow State */
+#btnToggleVR.active,
+#btnCamModeVR.active {
+  background: rgba(168, 85, 247, 0.22) !important;
+  border-color: #a855f7 !important;
+  color: #f3e8ff !important;
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.45);
+}
+
+.floorplan-3d-window.vr-fullscreen {
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  border: none;
+}
 

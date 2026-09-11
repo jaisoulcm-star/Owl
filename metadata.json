@@ -1,0 +1,8 @@
+{
+  "name": "Forzex Construction",
+  "description": "Professional construction management platform with architectural floor plans, interactive 3D walkthrough models, site analysis, and project tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

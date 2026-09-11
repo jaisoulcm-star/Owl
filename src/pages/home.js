@@ -16,11 +16,7 @@ export function homePage() {
     <section class="section skill-sphere-home-section" id="skills">
       <div class="container" style="max-width: 1200px;">
         <div class="skill-sphere-header animate-in">
-          <div class="skill-hud-badge">
-            <span class="hud-pulse-dot"></span>
-            <span class="hud-badge-text"><i class="fas fa-sparkles"></i> AI-Powered Smart Construction</span>
-          </div>
-          <h2 class="text-center" style="margin-top: 14px; margin-bottom: 28px;">3D Smart Construction House & Intelligence Network</h2>
+          <h2 class="text-center" style="margin-top: 0; margin-bottom: 28px;">3D Smart Construction House & Intelligence Network</h2>
         </div>
 
         <!-- 3D Construction House Viewport Wrapper -->

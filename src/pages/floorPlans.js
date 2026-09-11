@@ -1,5 +1,11 @@
 // ==================== Indian Floor Plans & MakeMyHouse Architectural Engine ====================
 // Inspired by IndianFloorPlans.com & MakeMyHouse.com search dimensions, 3D elevations & Vastu principles
+import {
+  renderFloorPlanBlueprint,
+  renderFloorPlanElevation,
+  renderFloorPlanStructural
+} from './floorPlanGraphics.js';
+import { getFloorPlan3DWalkthrough } from '../components/floorPlanWalkthrough/FloorPlan3DWalkthroughModal.js';
 
 export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref = 'Auto', width = 30, depth = 40) {
   const sqftNum = parseInt(sqft) || (parseInt(width) * parseInt(depth)) || 1200;
@@ -244,120 +250,12 @@ export function generate10IndianFloorPlans(sqft = 1200, facing = 'East', bhkPref
     plotWidth: widthNum,
     plotDepth: depthNum,
     estimatedDays: Math.round(110 + (sqftNum / 15)),
-    svgBlueprint: generateSvgBlueprint(t, sqftNum, widthNum, depthNum),
-    svg3dElevation: generate3dElevationSvg(t, widthNum, depthNum),
-    svgStructuralGrid: generateStructuralGridSvg(t, widthNum, depthNum)
+    svgBlueprint: renderFloorPlanBlueprint(t, sqftNum, widthNum, depthNum),
+    svg3dElevation: renderFloorPlanElevation(t, widthNum, depthNum),
+    svgStructuralGrid: renderFloorPlanStructural(t, widthNum, depthNum)
   }));
 }
 
-// Generate 2D Architectural SVG Blueprint
-function generateSvgBlueprint(template, sqft, width, depth) {
-  const color = template.colorScheme || '#38bdf8';
-  return `
-    <svg viewBox="0 0 400 280" width="100%" height="220" style="background:#090d16;border-radius:8px;border:1px solid rgba(255,255,255,0.1)">
-      <defs>
-        <pattern id="grid-${template.id}" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(56,189,248,0.07)" stroke-width="1"/>
-        </pattern>
-      </defs>
-      <rect width="400" height="280" fill="url(#grid-${template.id})" />
-
-      <rect x="25" y="25" width="350" height="230" fill="none" stroke="${color}" stroke-width="3.5" rx="4" />
-      <rect x="29" y="29" width="342" height="222" fill="none" stroke="#fff" stroke-width="1" stroke-dasharray="4,4" />
-
-      <rect x="35" y="35" width="200" height="130" fill="rgba(56,189,248,0.06)" stroke="${color}" stroke-width="1.5" />
-      <text x="135" y="95" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">LIVING & DINING</text>
-      <text x="135" y="112" fill="${color}" font-size="10" text-anchor="middle">${Math.round(width * 0.9)}' x ${Math.round(depth * 0.3)}'</text>
-
-      <rect x="245" y="35" width="120" height="130" fill="rgba(168,85,247,0.06)" stroke="${color}" stroke-width="1.5" />
-      <text x="305" y="95" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">MASTER BED</text>
-      <text x="305" y="112" fill="#a855f7" font-size="10" text-anchor="middle">${Math.round(width * 0.85)}' x ${Math.round(depth * 0.25)}'</text>
-
-      <rect x="35" y="173" width="130" height="72" fill="rgba(74,222,128,0.06)" stroke="${color}" stroke-width="1.5" />
-      <text x="100" y="210" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">SE KITCHEN</text>
-
-      <rect x="173" y="173" width="192" height="72" fill="rgba(245,158,11,0.06)" stroke="${color}" stroke-width="1.5" />
-      <text x="269" y="210" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">BED 2 / PUJA</text>
-
-      <circle cx="360" cy="45" r="14" fill="#0f172a" stroke="${color}" stroke-width="1.5" />
-      <text x="360" y="42" fill="#ef4444" font-size="8" font-weight="bold" text-anchor="middle">N</text>
-      <text x="360" y="53" fill="${color}" font-size="7" text-anchor="middle">${template.facing.substring(0,1)}</text>
-
-      <path d="M 120 25 L 140 25 A 20 20 0 0 1 120 45 Z" fill="none" stroke="#eab308" stroke-width="2" />
-      <text x="135" y="20" fill="#eab308" font-size="9" font-weight="bold" text-anchor="middle">MAIN ENTRY (${template.facing})</text>
-    </svg>
-  `;
-}
-
-// Generate 3D Front Elevation Render SVG (MakeMyHouse Style)
-function generate3dElevationSvg(template, width, depth) {
-  const color = template.colorScheme || '#38bdf8';
-  return `
-    <svg viewBox="0 0 400 280" width="100%" height="220" style="background:${template.elevationPreviewBg};border-radius:8px;border:1px solid rgba(255,255,255,0.15)">
-      <!-- Ground Horizon & Paving -->
-      <rect x="0" y="230" width="400" height="50" fill="#0f172a" />
-      <line x1="0" y1="230" x2="400" y2="230" stroke="${color}" stroke-width="2" />
-
-      <!-- Building Mass - Ground Floor -->
-      <rect x="60" y="110" width="280" height="120" fill="rgba(30,41,59,0.9)" stroke="${color}" stroke-width="2" rx="4" />
-
-      <!-- Building Mass - First Floor Villa Deck -->
-      <rect x="75" y="30" width="250" height="80" fill="rgba(15,23,42,0.95)" stroke="#fff" stroke-width="1.5" rx="3" />
-
-      <!-- Glass Balcony Railing -->
-      <rect x="75" y="90" width="250" height="20" fill="rgba(56,189,248,0.25)" stroke="${color}" stroke-width="1" />
-      <line x1="75" y1="90" x2="325" y2="90" stroke="${color}" stroke-width="2" />
-
-      <!-- Main Entrance Wooden Doors -->
-      <rect x="175" y="150" width="50" height="80" fill="#78350f" stroke="#f59e0b" stroke-width="1.5" rx="2" />
-      <circle cx="215" cy="190" r="3" fill="#fbbf24" />
-
-      <!-- Large Architectural Glass Windows -->
-      <rect x="85" y="45" width="60" height="40" fill="rgba(56,189,248,0.3)" stroke="#fff" stroke-width="1.5" />
-      <rect x="255" y="45" width="60" height="40" fill="rgba(56,189,248,0.3)" stroke="#fff" stroke-width="1.5" />
-
-      <!-- Warm Facade LED Spotlights -->
-      <circle cx="100" cy="120" r="4" fill="#fef08a" />
-      <circle cx="300" cy="120" r="4" fill="#fef08a" />
-
-      <text x="200" y="20" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${template.style.toUpperCase()}</text>
-      <text x="200" y="260" fill="${color}" font-size="10" font-weight="bold" text-anchor="middle">3D FRONT ELEVATION ARCHITECTURAL FACADE</text>
-    </svg>
-  `;
-}
-
-// Generate Structural Engineering Grid SVG
-function generateStructuralGridSvg(template, width, depth) {
-  const color = template.colorScheme || '#38bdf8';
-  return `
-    <svg viewBox="0 0 400 280" width="100%" height="220" style="background:#050811;border-radius:8px;border:1px solid rgba(255,255,255,0.1)">
-      <!-- Structural Grid Axes -->
-      <line x1="60" y1="20" x2="60" y2="260" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-      <line x1="160" y1="20" x2="160" y2="260" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-      <line x1="260" y1="20" x2="260" y2="260" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-      <line x1="340" y1="20" x2="340" y2="260" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-
-      <line x1="20" y1="50" x2="380" y2="50" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-      <line x1="20" y1="140" x2="380" y2="140" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-      <line x1="20" y1="230" x2="380" y2="230" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,4" />
-
-      <!-- RCC Columns (Nodes) -->
-      ${[
-        {x:60,y:50},{x:160,y:50},{x:260,y:50},{x:340,y:50},
-        {x:60,y:140},{x:160,y:140},{x:260,y:140},{x:340,y:140},
-        {x:60,y:230},{x:160,y:230},{x:260,y:230},{x:340,y:230}
-      ].map(c => `<rect x="${c.x-6}" y="${c.y-6}" width="12" height="12" fill="#ef4444" stroke="#fff" stroke-width="1.5"/>`).join('')}
-
-      <!-- Beams Connection Lines -->
-      <line x1="60" y1="50" x2="340" y2="50" stroke="#38bdf8" stroke-width="2" />
-      <line x1="60" y1="140" x2="340" y2="140" stroke="#38bdf8" stroke-width="2" />
-      <line x1="60" y1="230" x2="340" y2="230" stroke="#38bdf8" stroke-width="2" />
-
-      <text x="200" y="30" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">RCC COLUMN & BEAM STRUCTURAL LAYOUT</text>
-      <text x="200" y="255" fill="#38bdf8" font-size="10" text-anchor="middle">${template.colsCount} Columns (9" x 12") · Fe-550 Steel · M25 Concrete Grade</text>
-    </svg>
-  `;
-}
 
 // ==================== Floor Plans Page Template ====================
 export function floorPlansPage() {
@@ -466,7 +364,7 @@ export function floorPlansPage() {
           </div>
 
           <!-- Drawing View Mode Switcher Buttons -->
-          <div style="display:flex;gap:6px;background:rgba(15,23,42,0.8);padding:4px;border-radius:var(--radius-md);border:1px solid var(--border)">
+          <div style="display:flex;gap:6px;background:rgba(15,23,42,0.8);padding:4px;border-radius:var(--radius-md);border:1px solid var(--border);flex-wrap:wrap">
             <button class="btn btn-primary btn-sm view-mode-btn active" data-view-mode="2d">
               <i class="fas fa-layer-group"></i> 2D Blueprint
             </button>
@@ -475,6 +373,9 @@ export function floorPlansPage() {
             </button>
             <button class="btn btn-ghost btn-sm view-mode-btn" data-view-mode="structural">
               <i class="fas fa-table-cells"></i> Structural Grid
+            </button>
+            <button class="btn btn-ghost btn-sm view-mode-btn" data-view-mode="walkthrough" style="border:1px solid rgba(56,189,248,0.35);color:var(--primary)">
+              <i class="fas fa-vr-cardboard"></i> 3D Walkthrough
             </button>
           </div>
         </div>
@@ -489,7 +390,7 @@ export function floorPlansPage() {
   `;
 }
 
-// Render the 10 Floor Plan Cards HTML with viewMode (2d, 3d, or structural)
+// Render the 10 Floor Plan Cards HTML with viewMode (2d, 3d, structural, or walkthrough)
 export function renderPlansListHtml(plans, currentViewMode = '2d') {
   return plans.map((plan, idx) => {
     let renderGraphic = plan.svgBlueprint;
@@ -499,57 +400,66 @@ export function renderPlansListHtml(plans, currentViewMode = '2d') {
       modeTitle = '3D FRONT ELEVATION ARCHITECTURAL FACADE';
     } else if (currentViewMode === 'structural') {
       renderGraphic = plan.svgStructuralGrid;
-      modeTitle = 'RCC COLUMN & BEAM STRUCTURAL ENGINEERING LAYOUT';
+      modeTitle = 'RCC COLUMN & BEAM STRUCTURAL LAYOUT';
+    } else if (currentViewMode === 'walkthrough') {
+      renderGraphic = plan.svg3dElevation;
+      modeTitle = 'INTERACTIVE 3D CAD WALKTHROUGH · CLICK TO ENTER';
     }
 
     return `
-      <div class="card animate-in delay-${(idx % 3) + 1}" style="padding:22px;background:rgba(15,23,42,0.88);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;gap:16px;position:relative;overflow:hidden">
+      <div class="floor-plan-card animate-in delay-${(idx % 3) + 1}" id="floor-plan-card-${plan.id}" data-plan-id="${plan.id}">
         
-        <!-- Top Badge & Header -->
+        <!-- 1: Top Badge & Header -->
         <div>
-          <div class="flex-between" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">
-            <span class="badge badge-primary" style="font-size:0.78rem">Option ${idx + 1} of 10</span>
+          <div class="flex-between" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <span class="badge badge-primary" style="font-size:0.78rem;font-weight:700">Option ${idx + 1} of 10</span>
             <div style="display:flex;gap:6px">
-              <span class="badge badge-gold" style="font-size:0.75rem"><i class="fas fa-star"></i> ${plan.vastuScore}% Vastu</span>
+              <span class="badge badge-gold" style="font-size:0.75rem;box-shadow:0 0 10px rgba(245,158,11,0.25)"><i class="fas fa-star" style="color:var(--gold)"></i> ${plan.vastuScore}% Vastu</span>
               <span class="badge badge-accent" style="font-size:0.75rem">${plan.bhk}</span>
             </div>
           </div>
 
-          <h3 style="margin:0 0 6px;font-size:1.15rem;color:var(--text-primary)">${plan.title}</h3>
-          <p class="text-muted" style="font-size:0.82rem;margin-bottom:12px">
-            <i class="fas fa-ruler-combined" style="color:var(--primary);margin-right:4px"></i> <strong>Plot Dimensions:</strong> ${plan.plotWidth}' x ${plan.plotDepth}' (${plan.totalAreaSqFt} Sq Ft) · <strong>Facing:</strong> ${plan.facing}
+          <h3 style="margin:0 0 6px;font-size:1.18rem;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px">${plan.title}</h3>
+          <p class="text-muted" style="font-size:0.82rem;margin-bottom:8px;line-height:1.4">
+            <i class="fas fa-ruler-combined" style="color:var(--primary);margin-right:5px"></i> <strong>Plot Dimensions:</strong> ${plan.plotWidth}' x ${plan.plotDepth}' (${plan.totalAreaSqFt} Sq Ft) · <strong>Facing:</strong> ${plan.facing}
           </p>
         </div>
 
-        <!-- Dynamic Graphic Container (2D Blueprint / 3D Elevation / Structural Grid) -->
-        <div style="position:relative">
-          <div style="position:absolute;top:10px;left:10px;z-index:2;background:rgba(9,13,22,0.88);padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);font-size:0.72rem;color:var(--primary);font-weight:700">
-            <i class="fas fa-drafting-compass" style="margin-right:4px"></i> ${modeTitle}
+        <!-- 2: Dynamic Graphic Container (2D Blueprint / 3D Elevation / Structural Grid / 3D Walkthrough Portal) -->
+        <div class="blueprint-viewport-box" data-plan-id="${plan.id}" title="Click to launch interactive 3D Walkthrough Model">
+          <div class="blueprint-mode-tag">
+            <i class="${currentViewMode === 'walkthrough' ? 'fas fa-vr-cardboard' : 'fas fa-drafting-compass'}" style="color:var(--primary)"></i> ${modeTitle}
           </div>
           ${renderGraphic}
+          <button type="button" class="viewport-walkthrough-btn launch-3d-walkthrough" data-plan-id="${plan.id}" title="Launch Interactive 3D Walkthrough">
+            <i class="fas fa-vr-cardboard"></i> <span>3D Walkthrough</span>
+          </button>
         </div>
 
-        <!-- Room Specs & Advantages -->
-        <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid var(--border)">
-          <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:8px">
-            <strong style="color:var(--gold)"><i class="fas fa-lightbulb" style="margin-right:4px"></i> Special Feature:</strong> ${plan.highlight}
+        <!-- 3: Room Specs & Advantages -->
+        <div style="padding:14px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid rgba(56,189,248,0.15)">
+          <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px;line-height:1.4">
+            <strong style="color:var(--gold)"><i class="fas fa-lightbulb" style="margin-right:5px"></i> Special Feature:</strong> ${plan.highlight}
           </div>
-          <div style="font-size:0.78rem;color:var(--text-secondary);display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div><i class="fas fa-clock" style="color:var(--primary);margin-right:4px"></i> <strong>Est. Days:</strong> ${plan.estimatedDays} days</div>
-            <div><i class="fas fa-cubes" style="color:var(--accent);margin-right:4px"></i> <strong>RCC Columns:</strong> ${plan.colsCount} Columns</div>
+          <div style="font-size:0.78rem;color:var(--text-secondary);display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><i class="fas fa-clock" style="color:var(--primary);margin-right:5px"></i> <strong>Est. Days:</strong> ${plan.estimatedDays} days</div>
+            <div><i class="fas fa-cubes" style="color:var(--accent);margin-right:5px"></i> <strong>RCC Columns:</strong> ${plan.colsCount} Columns</div>
           </div>
         </div>
 
-        <!-- Price Quote & Action Buttons -->
-        <div style="padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <!-- 4: Price Quote & Action Buttons -->
+        <div style="padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
           <div>
-            <span class="text-muted" style="font-size:0.75rem;display:block">Est. Construction Cost</span>
-            <strong style="color:var(--success);font-size:1.1rem">${plan.costRange}</strong>
+            <span class="text-muted" style="font-size:0.75rem;display:block;margin-bottom:2px">Est. Construction Cost</span>
+            <strong style="color:var(--success);font-size:1.12rem;font-family:var(--font-mono)">${plan.costRange}</strong>
           </div>
 
           <div style="display:flex;gap:8px">
-            <a class="btn btn-primary btn-sm select-plan-btn" data-route="/workspace" data-plan-title="${plan.title}" style="font-size:0.82rem">
-              <i class="fas fa-check-circle"></i> Select Plan
+            <button type="button" class="btn btn-secondary btn-sm launch-3d-walkthrough" data-plan-id="${plan.id}" style="font-size:0.82rem;padding:7px 13px;border:1px solid rgba(56,189,248,0.45);background:rgba(15,23,42,0.9);color:var(--primary)">
+              <i class="fas fa-cube" style="margin-right:4px"></i> 3D Walkthrough
+            </button>
+            <a class="btn btn-primary btn-sm select-plan-btn" data-route="/workspace" data-plan-title="${plan.title}" style="font-size:0.82rem;padding:7px 16px;box-shadow:0 4px 14px rgba(56,189,248,0.3)">
+              <i class="fas fa-check-circle" style="margin-right:4px"></i> Select Plan
             </a>
           </div>
         </div>
@@ -575,6 +485,22 @@ export function setupFloorPlanPageHandlers() {
   const viewModeBtns = document.querySelectorAll('.view-mode-btn');
 
   let activeViewMode = '2d';
+  // Keep cache of currently active plans
+  let currentPlans = generate10IndianFloorPlans(400, 'East', '1 BHK', 10, 40);
+
+  // Click handler for 3D walkthrough (delegated on gridContainer)
+  if (gridContainer) {
+    gridContainer.addEventListener('click', (e) => {
+      const trigger = e.target.closest('.launch-3d-walkthrough, .blueprint-viewport-box');
+      if (trigger) {
+        const planId = trigger.getAttribute('data-plan-id') || trigger.closest('.floor-plan-card')?.getAttribute('data-plan-id');
+        const plan = currentPlans.find(p => p.id === planId) || currentPlans[0];
+        if (plan) {
+          getFloorPlan3DWalkthrough().open(plan, currentPlans);
+        }
+      }
+    });
+  }
 
   // Handle dimension preset buttons click
   dimPresetBtns.forEach(btn => {
@@ -612,7 +538,7 @@ export function setupFloorPlanPageHandlers() {
     }
   }
 
-  // Handle view mode switcher (2D, 3D, Structural)
+  // Handle view mode switcher (2D, 3D, Structural, Walkthrough)
   viewModeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       viewModeBtns.forEach(b => b.classList.remove('active', 'btn-primary'));
@@ -621,6 +547,12 @@ export function setupFloorPlanPageHandlers() {
       btn.classList.add('active', 'btn-primary');
 
       activeViewMode = btn.getAttribute('data-view-mode') || '2d';
+      if (activeViewMode === 'walkthrough') {
+        const activePlan = currentPlans[0];
+        if (activePlan) {
+          getFloorPlan3DWalkthrough().open(activePlan, currentPlans);
+        }
+      }
       triggerGeneratePlans();
     });
   });
@@ -639,6 +571,7 @@ export function setupFloorPlanPageHandlers() {
     const bhk = bhkSelect.value;
 
     const newPlans = generate10IndianFloorPlans(totalSqFt, facing, bhk, w, d);
+    currentPlans = newPlans;
 
     if (resultsHeader) {
       resultsHeader.textContent = `10 Executable House Plans for ${w} ft x ${d} ft (${totalSqFt} Sq Ft) · ${facing} Facing`;
