@@ -1,9 +1,11 @@
-// ==================== Interactive 3D Smart Construction House Engine ====================
-// Futuristic architectural wireframe smart house visualization with 12 intelligent feature nodes,
-// real-time 3D feature reactions, glowing wireframe outlines, blueprint HUD, and responsive telemetry.
+// ==================== Interactive 3D Realistic Modern Luxury Villa Engine ====================
+// Professional architectural visualization and parametric AI House Planner engine for
+// modern luxury villas, featuring PBR materials, day/night simulation, first-person walkthrough,
+// floor cutaways, CAD measurement dimensions, live construction telemetry, and 12 intelligence nodes.
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { LuxuryVillaModel } from './luxuryVillaModel.js';
 import { CONSTRUCTION_FEATURES, getFeatureById } from './constructionFeaturesData.js';
 import { getFloorPlan3DWalkthrough } from '../floorPlanWalkthrough/FloorPlan3DWalkthroughModal.js';
 import { generate10IndianFloorPlans } from '../../pages/floorPlans.js';
@@ -37,11 +39,30 @@ export class ConstructionHouse3D {
     this.activeCategory = options.initialCategory || 'ALL';
     this.isRotating = true;
     this.isDestroyed = false;
-    this.isInViewport = true; // Always true initially so rendering starts immediately
+    this.isInViewport = true;
     this.hoveredFeatureId = null;
     this.selectedFeatureId = null;
 
-    this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    // Camera & Viewport Modes
+    // Modes: 'exterior', 'interior', 'top', 'floorplan', 'walkthrough'
+    this.viewMode = 'exterior';
+    this.timeOfDay = 'day'; // 'day', 'night'
+    this.plotPreset = '30x40'; // '30x40', '40x60', '50x80'
+    this.activeMaterial = 'travertine'; // 'travertine', 'concrete', 'brick', 'wood', 'slate'
+    this.activeFloor = 'all'; // 'all', 'ground', 'first', 'roof'
+    this.showDimensions = true;
+
+    // First Person Walkthrough State
+    this.walkSpeed = 4.8;
+    this.keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+    this.fpsYaw = 0;
+    this.fpsPitch = 0;
+    this.isMouseDown = false;
+    this.lastMousePos = { x: 0, y: 0 };
+    this.targetCameraPos = null;
+    this.targetCameraLookAt = null;
+
+    this.mouse = { x: 0, y: 0 };
     this.normalizedPointer = new THREE.Vector2(-999, -999);
     this.raycaster = new THREE.Raycaster();
 
@@ -50,16 +71,6 @@ export class ConstructionHouse3D {
     this.dataPackets = [];
     this.htmlLabelElements = new Map();
     this.disposables = [];
-
-    // Interactive feature reaction elements
-    this.wallMaterials = [];
-    this.interiorLight = null;
-    this.interiorFurnitureGroup = null;
-    this.materialCubesGroup = null;
-    this.neuralNetworkGroup = null;
-    this.landMeasurementGroup = null;
-    this.safetyZoneGroup = null;
-    this.edgeTracerMesh = null;
 
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (this.reducedMotion) {
@@ -92,46 +103,38 @@ export class ConstructionHouse3D {
     }
 
     this.setupScene();
+    this.createRealisticLuxuryVilla();
     this.createBlueprintGroundAndCompass();
-    this.createFuturisticSmartHouse();
-    this.createBlueprintDimensionAnnotations();
-    this.createCADTrihedron();
     this.createFeatureNodes();
     this.createHouseConduits();
     this.createDataPulseSystem();
-    this.createConstructionDataParticles();
-    this.createEdgeTracerSystem();
-    this.createSpecialReactionSystems();
     this.createHtmlLabels();
+    this.injectArchitecturalControlsHUD();
     this.setupEventListeners();
     this.setupIntersectionObserver();
 
     this.clock = new THREE.Clock();
-    if (this.controls) this.controls.target.set(0, 0, 0);
     this.animate();
 
-    // Trigger an initial resize pass after DOM paints
     requestAnimationFrame(() => {
       this.onResize();
+      this.updateTelemetryHUD();
     });
   }
 
-  // ==================== Scene & Isometric Perspective Camera ====================
+  // ==================== Scene & Lighting ====================
   setupScene() {
     const rect = this.mountEl.getBoundingClientRect();
-    this.width = rect.width || this.mountEl.clientWidth || 920;
-    this.height = rect.height || this.mountEl.clientHeight || 680;
-
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-    const cameraDistance = isMobile ? 22 : (isTablet ? 19 : 16.5);
+    this.width = rect.width || this.mountEl.clientWidth || 960;
+    this.height = rect.height || this.mountEl.clientHeight || 700;
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x050c1a, 0.012);
+    this.scene.background = new THREE.Color(0x060c18);
+    this.scene.fog = new THREE.FogExp2(0x060c18, 0.01);
 
-    this.camera = new THREE.PerspectiveCamera(42, this.width / this.height, 0.1, 1000);
-    this.camera.position.set(cameraDistance * 0.76, cameraDistance * 0.58, cameraDistance * 0.84);
-    this.camera.lookAt(0, 0.4, 0);
+    this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
+    this.camera.position.set(15, 12, 16);
+    this.camera.lookAt(0, 2.5, 0);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -140,811 +143,197 @@ export class ConstructionHouse3D {
     });
     this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.15;
 
     this.mountEl.innerHTML = '';
     this.mountEl.appendChild(this.renderer.domElement);
     this.canvas = this.renderer.domElement;
 
-    // Master universe pivot group for mouse parallax & tilt
-    this.universeGroup = new THREE.Group();
-    this.scene.add(this.universeGroup);
-
-    // Architectural Key, Rim & Sky Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
-    this.scene.add(ambientLight);
-
-    const cyanKeyLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    cyanKeyLight.position.set(16, 22, 14);
-    this.scene.add(cyanKeyLight);
-
-    const purpleRimLight = new THREE.DirectionalLight(0xfff0dd, 1.2);
-    purpleRimLight.position.set(-15, 14, -14);
-    this.scene.add(purpleRimLight);
-
-    const softFillLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
-    softFillLight.position.set(0, -10, 10);
-    this.scene.add(softFillLight);
-
+    // OrbitControls with full natural rotation, pan and zoom
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
-    this.controls.enableZoom = false;
+    this.controls.enableZoom = true;
     this.controls.enablePan = true;
-    this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = 1.0;
-    this.controls.minPolarAngle = Math.PI / 2.8; // Lock vertical rotation
-    this.controls.maxPolarAngle = Math.PI / 2.8; // Lock vertical rotation
+    this.controls.minDistance = 2.0;
+    this.controls.maxDistance = 45.0;
+    this.controls.minPolarAngle = 0.05;
+    this.controls.maxPolarAngle = Math.PI / 2 - 0.02; // Prevent going beneath ground plane
+    this.controls.target.set(0, 2.0, 0);
+
+    this.universeGroup = new THREE.Group();
+    this.scene.add(this.universeGroup);
   }
 
-  // ==================== Blueprint Ground Disc & Compass ====================
+  // ==================== Create Realistic Luxury Villa ====================
+  createRealisticLuxuryVilla() {
+    if (this.villaModel) {
+      this.universeGroup.remove(this.villaModel.rootGroup);
+      this.villaModel.dispose();
+    }
+
+    this.villaModel = new LuxuryVillaModel({
+      plotPreset: this.plotPreset,
+      materialCladding: this.activeMaterial,
+      floorFilter: this.activeFloor,
+      timeOfDay: this.timeOfDay,
+      showDimensions: this.showDimensions
+    });
+
+    this.universeGroup.add(this.villaModel.rootGroup);
+    this.houseGroup = this.villaModel.rootGroup;
+    this.houseAttachmentPoints = this.villaModel.getAttachmentPoints();
+  }
+
+  // ==================== Blueprint Ground & Compass Disc ====================
   createBlueprintGroundAndCompass() {
     this.groundGroup = new THREE.Group();
-    this.groundGroup.position.y = -1.95;
+    this.groundGroup.position.y = -0.22;
     this.universeGroup.add(this.groundGroup);
 
-    // 1. Futuristic Blueprint Grid
-    const gridHelper = new THREE.GridHelper(24, 36, 0x00f2fe, 0x0c2545);
+    // Subtle CAD Grid
+    const gridHelper = new THREE.GridHelper(32, 32, 0x00f2fe, 0x1e293b);
     gridHelper.material.transparent = true;
-    gridHelper.material.opacity = 0.5;
+    gridHelper.material.opacity = 0.25;
     this.groundGroup.add(gridHelper);
     this.disposables.push(gridHelper.geometry, gridHelper.material);
 
-    // 2. Glowing Circular Blueprint Compass Ring
+    // Architectural Vastu Compass Ring
     const ringPoints = [];
+    const r = 11.5;
     for (let i = 0; i <= 64; i++) {
       const theta = (i / 64) * Math.PI * 2;
-      ringPoints.push(new THREE.Vector3(Math.cos(theta) * 8.2, 0.02, Math.sin(theta) * 8.2));
+      ringPoints.push(new THREE.Vector3(Math.cos(theta) * r, 0.02, Math.sin(theta) * r));
     }
     const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPoints);
-    const ringMat = new THREE.LineBasicMaterial({
-      color: 0x00f2fe,
-      transparent: true,
-      opacity: 0.45,
-      blending: THREE.AdditiveBlending
-    });
-    const compassRing = new THREE.Line(ringGeo, ringMat);
-    this.groundGroup.add(compassRing);
+    const ringMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.35 });
+    this.groundGroup.add(new THREE.Line(ringGeo, ringMat));
     this.disposables.push(ringGeo, ringMat);
-
-    // Inner tick ring
-    const innerPoints = [];
-    for (let i = 0; i <= 32; i++) {
-      const theta = (i / 32) * Math.PI * 2;
-      innerPoints.push(new THREE.Vector3(Math.cos(theta) * 6.5, 0.02, Math.sin(theta) * 6.5));
-    }
-    const innerGeo = new THREE.BufferGeometry().setFromPoints(innerPoints);
-    const innerMat = new THREE.LineBasicMaterial({
-      color: 0xa855f7,
-      transparent: true,
-      opacity: 0.35,
-      blending: THREE.AdditiveBlending
-    });
-    this.groundGroup.add(new THREE.Line(innerGeo, innerMat));
-    this.disposables.push(innerGeo, innerMat);
-
-    // Compass Cardinal Labels (N, S, E, W)
-    const addMarker = (text, x, z) => {
-      const sprite = this.createCADTextSprite(text, 32, '#00f2fe');
-      sprite.position.set(x, 0.2, z);
-      sprite.scale.set(1.2, 0.6, 1);
-      this.groundGroup.add(sprite);
-    };
-    addMarker('N (0°)', 0, -8.7);
-    addMarker('S (180°)', 0, 8.7);
-    addMarker('E (90°)', 8.7, 0);
-    addMarker('W (270°)', -8.7, 0);
-
-    // 3. Concrete Plinth / Foundation Slab with Cyan Edge
-    const plinthGeo = new THREE.BoxGeometry(7.8, 0.35, 6.6);
-    const plinthMat = new THREE.MeshStandardMaterial({
-      color: 0x091932,
-      roughness: 0.3,
-      metalness: 0.85
-    });
-    const plinth = new THREE.Mesh(plinthGeo, plinthMat);
-    plinth.position.set(-0.2, 0.18, -0.2);
-    this.groundGroup.add(plinth);
-    this.addWireframeEdges(plinth, plinthGeo, 0x00f2fe, 0.7);
-    this.disposables.push(plinthGeo, plinthMat);
-
-    // 4. Paver Walkway & Futuristic Landscaping Strip
-    const lawnGeo = new THREE.BoxGeometry(8.0, 0.08, 0.9);
-    const lawnMat = new THREE.MeshStandardMaterial({
-      color: 0x064e3b,
-      emissive: 0x047857,
-      emissiveIntensity: 0.25,
-      roughness: 0.6
-    });
-    const lawn1 = new THREE.Mesh(lawnGeo, lawnMat);
-    lawn1.position.set(-0.2, 0.24, 3.25);
-    this.groundGroup.add(lawn1);
-    this.addWireframeEdges(lawn1, lawnGeo, 0x10b981, 0.6);
-    this.disposables.push(lawnGeo, lawnMat);
-
-    // Holographic corner landscaping shrub
-    const shrubGeo = new THREE.IcosahedronGeometry(0.42, 1);
-    const shrubMat = new THREE.MeshStandardMaterial({
-      color: 0x059669,
-      emissive: 0x10b981,
-      emissiveIntensity: 0.4,
-      wireframe: true
-    });
-    const shrub = new THREE.Mesh(shrubGeo, shrubMat);
-    shrub.position.set(-3.6, 0.55, 3.1);
-    this.groundGroup.add(shrub);
-    this.disposables.push(shrubGeo, shrubMat);
   }
 
-  // ==================== Futuristic Architectural Smart House ====================
-  createFuturisticSmartHouse() {
-    this.houseGroup = new THREE.Group();
-    this.universeGroup.add(this.houseGroup);
-
-    // Materials Palette
-    // 1. Dark Navy Obsidian Structural Facade
-    this.facadeMat = new THREE.MeshStandardMaterial({
-      color: 0xe5e7eb, // Off-white stucco
-      roughness: 0.8,
-      metalness: 0.1
-    });
-    this.wallMaterials.push(this.facadeMat);
-
-    // 2. Second floor accent cladding
-    this.upperFacadeMat = new THREE.MeshStandardMaterial({
-      color: 0x8b5a2b, // Wood siding
-      roughness: 0.9,
-      metalness: 0.05
-    });
-    this.wallMaterials.push(this.upperFacadeMat);
-
-    // 3. Futuristic Tinted Glass (Semi-Transparent Curtain Wall)
-    this.glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x000000,
-      roughness: 0.1,
-      metalness: 0.8,
-      transparent: true,
-      opacity: 0.6,
-      transmission: 0.8,
-      ior: 1.5,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.1
-    });
-
-    // 4. White / Cyan Architectural Trims & Structural Frames
-    const structuralFrameMat = new THREE.MeshStandardMaterial({
-      color: 0x334155, // Dark slate metal
-      roughness: 0.4,
-      metalness: 0.7
-    });
-
-    // 5. Roof Slate Slopes
-    this.roofMat = new THREE.MeshStandardMaterial({
-      color: 0x1f2937, // Dark asphalt
-      roughness: 0.9,
-      metalness: 0.1
-    });
-
-    this.disposables.push(this.facadeMat, this.upperFacadeMat, this.glassMat, structuralFrameMat, this.roofMat);
-
-    const groundH = 1.65;
-    const upperH = 1.55;
-
-    // -------------------------------------------------------------
-    // 1. Ground Floor (Dark Obsidian Body with Cyan Wireframe)
-    // -------------------------------------------------------------
-    const gfMainGeo = new THREE.BoxGeometry(5.2, groundH, 3.4);
-    const gfMain = new THREE.Mesh(gfMainGeo, this.facadeMat);
-    gfMain.position.set(-0.3, -0.9, -0.4);
-    this.houseGroup.add(gfMain);
-    this.addWireframeEdges(gfMain, gfMainGeo, 0x00f2fe, 0.85);
-
-    const gfFrontGeo = new THREE.BoxGeometry(2.6, groundH, 1.8);
-    const gfFront = new THREE.Mesh(gfFrontGeo, this.facadeMat);
-    gfFront.position.set(1.0, -0.9, 1.3);
-    this.houseGroup.add(gfFront);
-    this.addWireframeEdges(gfFront, gfFrontGeo, 0x00f2fe, 0.85);
-
-    // -------------------------------------------------------------
-    // 2. Mid-Band Floor Slab (Glowing Divider Ribbon)
-    // -------------------------------------------------------------
-    const band1Geo = new THREE.BoxGeometry(5.35, 0.14, 3.55);
-    const band1 = new THREE.Mesh(band1Geo, structuralFrameMat);
-    band1.position.set(-0.3, -0.05, -0.4);
-    this.houseGroup.add(band1);
-    this.addWireframeEdges(band1, band1Geo, 0x38bdf8, 0.95);
-
-    const band2Geo = new THREE.BoxGeometry(2.75, 0.14, 1.95);
-    const band2 = new THREE.Mesh(band2Geo, structuralFrameMat);
-    band2.position.set(1.0, -0.05, 1.3);
-    this.houseGroup.add(band2);
-    this.addWireframeEdges(band2, band2Geo, 0x38bdf8, 0.95);
-
-    // -------------------------------------------------------------
-    // 3. Upper Story & Cantilevered Balcony
-    // -------------------------------------------------------------
-    const ufMainGeo = new THREE.BoxGeometry(5.0, upperH, 3.3);
-    const ufMain = new THREE.Mesh(ufMainGeo, this.upperFacadeMat);
-    ufMain.position.set(-0.3, 0.78, -0.4);
-    this.houseGroup.add(ufMain);
-    this.addWireframeEdges(ufMain, ufMainGeo, 0x00f2fe, 0.85);
-
-    const ufFrontGeo = new THREE.BoxGeometry(2.5, upperH, 1.8);
-    const ufFront = new THREE.Mesh(ufFrontGeo, this.upperFacadeMat);
-    ufFront.position.set(1.0, 0.78, 1.3);
-    this.houseGroup.add(ufFront);
-    this.addWireframeEdges(ufFront, ufFrontGeo, 0x00f2fe, 0.85);
-
-    // Cantilevered Upper Terrace Balcony
-    const balconyFloorGeo = new THREE.BoxGeometry(2.4, 0.12, 1.1);
-    const balconyFloor = new THREE.Mesh(balconyFloorGeo, structuralFrameMat);
-    balconyFloor.position.set(-1.6, -0.05, 1.6);
-    this.houseGroup.add(balconyFloor);
-    this.addWireframeEdges(balconyFloor, balconyFloorGeo, 0x00f2fe, 0.9);
-
-    // Balcony Glowing Glass Railing
-    const balconyGlassGeo = new THREE.BoxGeometry(2.35, 0.7, 0.06);
-    const balconyGlass = new THREE.Mesh(balconyGlassGeo, this.glassMat);
-    balconyGlass.position.set(-1.6, 0.35, 2.12);
-    this.houseGroup.add(balconyGlass);
-    this.addWireframeEdges(balconyGlass, balconyGlassGeo, 0x38bdf8, 0.9);
-
-    const balconySideGlassGeo = new THREE.BoxGeometry(0.06, 0.7, 1.05);
-    const balconySideGlass = new THREE.Mesh(balconySideGlassGeo, this.glassMat);
-    balconySideGlass.position.set(-2.75, 0.35, 1.6);
-    this.houseGroup.add(balconySideGlass);
-    this.addWireframeEdges(balconySideGlass, balconySideGlassGeo, 0x38bdf8, 0.9);
-
-    // Structural Steel Support Columns (Ground to Balcony)
-    const columnGeo = new THREE.CylinderGeometry(0.06, 0.06, groundH, 12);
-    const columnMat = new THREE.MeshStandardMaterial({
-      color: 0x38bdf8,
-      emissive: 0x00f2fe,
-      emissiveIntensity: 0.3,
-      metalness: 0.9
-    });
-    const col1 = new THREE.Mesh(columnGeo, columnMat);
-    col1.position.set(-2.7, -0.9, 2.1);
-    this.houseGroup.add(col1);
-
-    const col2 = new THREE.Mesh(columnGeo, columnMat);
-    col2.position.set(-0.5, -0.9, 2.1);
-    this.houseGroup.add(col2);
-
-    this.disposables.push(
-      gfMainGeo, gfFrontGeo, band1Geo, band2Geo, ufMainGeo, ufFrontGeo,
-      balconyFloorGeo, balconyGlassGeo, balconySideGlassGeo, columnGeo, columnMat
-    );
-
-    // -------------------------------------------------------------
-    // 4. Cross-Gable Pitched Roofs with Glowing Ridge Lines
-    // -------------------------------------------------------------
-    const createTriangleGableWall = (width, height, mat) => {
-      const shape = new THREE.Shape();
-      shape.moveTo(-width / 2, 0);
-      shape.lineTo(width / 2, 0);
-      shape.lineTo(0, height);
-      shape.closePath();
-      const extrudeSettings = { depth: 0.12, bevelEnabled: false };
-      return new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    };
-
-    // Left Gable Wall
-    const leftGableGeo = createTriangleGableWall(3.3, 1.65, this.upperFacadeMat);
-    const leftGable = new THREE.Mesh(leftGableGeo, this.upperFacadeMat);
-    leftGable.position.set(-2.85, 1.55, 1.25);
-    leftGable.rotation.y = Math.PI / 2;
-    this.houseGroup.add(leftGable);
-    this.addWireframeEdges(leftGable, leftGableGeo, 0x00f2fe, 0.85);
-
-    // Front Gable Wall
-    const frontGableGeo = createTriangleGableWall(2.5, 1.25, this.upperFacadeMat);
-    const frontGable = new THREE.Mesh(frontGableGeo, this.upperFacadeMat);
-    frontGable.position.set(1.0, 1.55, 2.15);
-    this.houseGroup.add(frontGable);
-    this.addWireframeEdges(frontGable, frontGableGeo, 0x00f2fe, 0.85);
-
-    // Main Longitudinal Roof Pitched Planes (45° pitch)
-    const mainRoofSlopeLen = 2.45;
-    const mainRoofLen = 5.6;
-
-    // South/Front Slope
-    const slope1Geo = new THREE.BoxGeometry(mainRoofLen, 0.08, mainRoofSlopeLen);
-    const slope1 = new THREE.Mesh(slope1Geo, this.roofMat);
-    slope1.position.set(-0.3, 2.38, 0.42);
-    slope1.rotation.x = Math.PI / 4;
-    this.houseGroup.add(slope1);
-    this.addWireframeEdges(slope1, slope1Geo, 0x00f2fe, 0.85);
-
-    // North/Back Slope
-    const slope2 = new THREE.Mesh(slope1Geo, this.roofMat);
-    slope2.position.set(-0.3, 2.38, -1.22);
-    slope2.rotation.x = -Math.PI / 4;
-    this.houseGroup.add(slope2);
-    this.addWireframeEdges(slope2, slope1Geo, 0x00f2fe, 0.85);
-
-    // Front Projecting Gable Slopes (Intersecting valley at 107.5°)
-    const frontRoofSlopeLen = 1.95;
-    const frontRoofLen = 2.8;
-    const fSlopeGeo = new THREE.BoxGeometry(frontRoofLen, 0.08, frontRoofSlopeLen);
-
-    // East Slope of Front Gable
-    const fSlopeE = new THREE.Mesh(fSlopeGeo, this.roofMat);
-    fSlopeE.position.set(1.68, 2.18, 1.3);
-    fSlopeE.rotation.z = -Math.PI / 4;
-    fSlopeE.rotation.y = Math.PI / 2;
-    this.houseGroup.add(fSlopeE);
-    this.addWireframeEdges(fSlopeE, fSlopeGeo, 0x00f2fe, 0.85);
-
-    // West Slope of Front Gable
-    const fSlopeW = new THREE.Mesh(fSlopeGeo, this.roofMat);
-    fSlopeW.position.set(0.32, 2.18, 1.3);
-    fSlopeW.rotation.z = Math.PI / 4;
-    fSlopeW.rotation.y = Math.PI / 2;
-    this.houseGroup.add(fSlopeW);
-    this.addWireframeEdges(fSlopeW, fSlopeGeo, 0x00f2fe, 0.85);
-
-    // Glowing Roof Ridge Beam
-    const ridgePoints = [
-      new THREE.Vector3(-3.1, 3.25, -0.4),
-      new THREE.Vector3(2.5, 3.25, -0.4)
-    ];
-    const ridgeGeo = new THREE.BufferGeometry().setFromPoints(ridgePoints);
-    const ridgeMat = new THREE.LineBasicMaterial({ color: 0x00f2fe, linewidth: 2 });
-    this.houseGroup.add(new THREE.Line(ridgeGeo, ridgeMat));
-
-    // Valley line
-    const valleyPoints = [
-      new THREE.Vector3(1.0, 2.8, 1.3),
-      new THREE.Vector3(1.0, 2.8, -0.4)
-    ];
-    const valleyGeo = new THREE.BufferGeometry().setFromPoints(valleyPoints);
-    this.houseGroup.add(new THREE.Line(valleyGeo, ridgeMat));
-
-    this.disposables.push(leftGableGeo, frontGableGeo, slope1Geo, fSlopeGeo, ridgeGeo, ridgeMat, valleyGeo);
-
-    // -------------------------------------------------------------
-    // 5. Transparent Architectural Windows with Interior Glow
-    // -------------------------------------------------------------
-    this.windowFrames = [];
-    const addSmartWindow = (x, y, z, w, h, isRotY = false) => {
-      const frameGeo = new THREE.BoxGeometry(w, h, 0.08);
-      const frame = new THREE.Mesh(frameGeo, structuralFrameMat);
-      frame.position.set(x, y, z);
-      if (isRotY) frame.rotation.y = Math.PI / 2;
-
-      const glassGeo = new THREE.BoxGeometry(w - 0.12, h - 0.12, 0.1);
-      const glass = new THREE.Mesh(glassGeo, this.glassMat);
-      frame.add(glass);
-      this.addWireframeEdges(frame, frameGeo, 0x00f2fe, 0.9);
-
-      this.houseGroup.add(frame);
-      this.windowFrames.push(frame);
-      this.disposables.push(frameGeo, glassGeo);
-    };
-
-    // Ground Floor Windows
-    addSmartWindow(2.0, -0.75, 2.22, 0.9, 1.0);
-    addSmartWindow(2.32, -0.75, -0.4, 0.9, 1.0, true);
-    addSmartWindow(-2.82, -0.75, 0.2, 0.85, 0.9, true);
-
-    // Upper Floor Windows
-    addSmartWindow(0.45, 0.95, 2.22, 0.75, 0.95);
-    addSmartWindow(1.55, 0.95, 2.22, 0.75, 0.95);
-    addSmartWindow(-2.82, 0.95, -0.4, 1.6, 0.85, true);
-    addSmartWindow(2.22, 0.95, -0.4, 0.8, 0.9, true);
-
-    // Balcony French Sliding Doors
-    addSmartWindow(-1.6, 0.9, 1.28, 1.8, 1.2);
-
-    // -------------------------------------------------------------
-    // 6. Recessed Modern Entrance Door & Concrete Steps
-    // -------------------------------------------------------------
-    const doorGeo = new THREE.BoxGeometry(0.85, 1.45, 0.06);
-    const doorMat = new THREE.MeshStandardMaterial({
-      color: 0x0284c7,
-      emissive: 0x0369a1,
-      emissiveIntensity: 0.2,
-      roughness: 0.4
-    });
-    const door = new THREE.Mesh(doorGeo, doorMat);
-    door.position.set(-0.15, -0.85, 2.05);
-    this.houseGroup.add(door);
-    this.addWireframeEdges(door, doorGeo, 0x38bdf8, 0.8);
-
-    // Steps
-    for (let s = 0; s < 3; s++) {
-      const stepGeo = new THREE.BoxGeometry(1.2 - s * 0.15, 0.12, 0.35);
-      const step = new THREE.Mesh(stepGeo, structuralFrameMat);
-      step.position.set(-0.15, -1.6 + s * 0.12, 2.35 + (2 - s) * 0.25);
-      this.houseGroup.add(step);
-      this.addWireframeEdges(step, stepGeo, 0x00f2fe, 0.7);
-      this.disposables.push(stepGeo);
-    }
-    this.disposables.push(doorGeo, doorMat);
-
-    // -------------------------------------------------------------
-    // 7. Interior Visible Rooms & Ambient Illumination
-    // -------------------------------------------------------------
-    this.interiorLight = new THREE.PointLight(0x38bdf8, 1.5, 8.0);
-    this.interiorLight.position.set(0.5, 0.5, 0.2);
-    this.houseGroup.add(this.interiorLight);
-
-    // Interior Room Silhouettes
-    this.interiorFurnitureGroup = new THREE.Group();
-    this.houseGroup.add(this.interiorFurnitureGroup);
-
-    // Living Room Sofa Silhouette
-    const sofaGeo = new THREE.BoxGeometry(1.2, 0.38, 0.55);
-    const furnitureMat = new THREE.MeshStandardMaterial({
-      color: 0x0f3460,
-      emissive: 0x00f2fe,
-      emissiveIntensity: 0.2,
-      roughness: 0.5
-    });
-    const sofa = new THREE.Mesh(sofaGeo, furnitureMat);
-    sofa.position.set(1.0, -1.4, 0.8);
-    this.interiorFurnitureGroup.add(sofa);
-
-    // Coffee Table
-    const tableGeo = new THREE.BoxGeometry(0.7, 0.22, 0.4);
-    const table = new THREE.Mesh(tableGeo, furnitureMat);
-    table.position.set(1.0, -1.5, 0.1);
-    this.interiorFurnitureGroup.add(table);
-
-    // Modern Cantilevered Staircase
-    for (let st = 0; st < 8; st++) {
-      const treadGeo = new THREE.BoxGeometry(0.8, 0.05, 0.22);
-      const tread = new THREE.Mesh(treadGeo, furnitureMat);
-      tread.position.set(-1.8, -1.4 + st * 0.2, -0.8 + st * 0.18);
-      this.interiorFurnitureGroup.add(tread);
-      this.disposables.push(treadGeo);
-    }
-
-    // Upper Floor Bed Silhouette
-    const bedGeo = new THREE.BoxGeometry(1.4, 0.35, 1.5);
-    const bed = new THREE.Mesh(bedGeo, furnitureMat);
-    bed.position.set(0.4, 0.3, -0.6);
-    this.interiorFurnitureGroup.add(bed);
-
-    this.disposables.push(sofaGeo, tableGeo, bedGeo, furnitureMat);
-
-    // Attachment coordinate points for 3D conduits
-    this.houseAttachmentPoints = {
-      'roof': new THREE.Vector3(1.0, 2.8, 1.3),
-      'upper-cantilever': new THREE.Vector3(-1.6, 1.2, 1.6),
-      'interior': new THREE.Vector3(1.0, 0.6, 1.2),
-      'walls': new THREE.Vector3(2.3, -0.4, 0.5),
-      'exterior-facade': new THREE.Vector3(-2.8, 0.8, -0.4),
-      'foundation-slab': new THREE.Vector3(-0.2, -1.8, 2.4),
-      'ground-plane': new THREE.Vector3(-3.2, -1.9, 2.2),
-      'ground-floor-door': new THREE.Vector3(-0.15, -0.8, 2.05),
-      'structural-columns': new THREE.Vector3(2.2, -0.8, 2.2),
-      'balcony-railing': new THREE.Vector3(-1.6, 0.6, 2.1)
-    };
-  }
-
-  // Helper to add glowing wireframe edges
-  addWireframeEdges(mesh, geometry, colorHex = 0x00f2fe, opacity = 0.85) {
-    return; // DISABLED for realistic mode
-    const edgesGeo = new THREE.EdgesGeometry(geometry, 25);
-    const edgesMat = new THREE.LineBasicMaterial({
-      color: colorHex,
-      transparent: true,
-      opacity: opacity,
-      blending: THREE.AdditiveBlending
-    });
-    const wireframe = new THREE.LineSegments(edgesGeo, edgesMat);
-    mesh.add(wireframe);
-    this.disposables.push(edgesGeo, edgesMat);
-    return wireframe;
-  }
-
-  // ==================== Blueprint Dimension Annotations ====================
-  createBlueprintDimensionAnnotations() {
-    this.cadAnnotationsGroup = new THREE.Group();
-    this.universeGroup.add(this.cadAnnotationsGroup);
-
-    // 1. Front Dimension Line: L = 8.65m
-    const frontDimY = -1.75;
-    const frontDimZ = 4.3;
-    const pFrontL = new THREE.Vector3(-2.9, frontDimY, frontDimZ);
-    const pFrontR = new THREE.Vector3(2.9, frontDimY, frontDimZ);
-
-    this.createDimensionLineWithArrows(pFrontL, pFrontR, 0x00f2fe);
-    const labelL = this.createCADTextSprite('L = 8.65m (Frontage)', 24, '#00f2fe');
-    labelL.position.set(0, frontDimY + 0.35, frontDimZ);
-    labelL.scale.set(2.8, 0.8, 1);
-    this.cadAnnotationsGroup.add(labelL);
-
-    // 2. Left Side Height Dimension Line: H = 3.20m
-    const sideDimX = -4.3;
-    const pSideBottom = new THREE.Vector3(sideDimX, -1.8, 0);
-    const pSideTop = new THREE.Vector3(sideDimX, 1.4, 0);
-
-    this.createDimensionLineWithArrows(pSideBottom, pSideTop, 0x38bdf8);
-    const labelH1 = this.createCADTextSprite('H = 3.20m (Eaves)', 24, '#38bdf8');
-    labelH1.position.set(sideDimX - 0.2, -0.2, 0);
-    labelH1.scale.set(2.6, 0.8, 1);
-    this.cadAnnotationsGroup.add(labelH1);
-
-    // Vertical Coordinate Arrow
-    const arrowZ = this.createCADTextSprite('+Z Axis', 24, '#38bdf8');
-    arrowZ.position.set(sideDimX, 2.0, 0);
-    arrowZ.scale.set(1.4, 0.7, 1);
-    this.cadAnnotationsGroup.add(arrowZ);
-
-    // 3. Front Right Roof Apex Height: H = 2.90m
-    const rightDimX = 3.9;
-    const pRightBottom = new THREE.Vector3(rightDimX, 0.0, 1.3);
-    const pRightTop = new THREE.Vector3(rightDimX, 2.9, 1.3);
-
-    this.createDimensionLineWithArrows(pRightBottom, pRightTop, 0xa855f7);
-    const labelH2 = this.createCADTextSprite('H = 2.90m (Ridge)', 24, '#a855f7');
-    labelH2.position.set(rightDimX + 0.3, 1.45, 1.3);
-    labelH2.scale.set(2.6, 0.8, 1);
-    this.cadAnnotationsGroup.add(labelH2);
-
-    // 4. Roof Pitch Annotation: Roof Pitch: 45°
-    const pitchLabel = this.createCADTextSprite('Roof Pitch: 45°', 24, '#00f2fe');
-    pitchLabel.position.set(2.6, 3.4, -0.4);
-    pitchLabel.scale.set(2.8, 0.8, 1);
-    this.cadAnnotationsGroup.add(pitchLabel);
-
-    // 5. Roof Valley Angle Callout: A = 107.5°
-    const angleLabel = this.createCADTextSprite('Valley A = 107.5°', 24, '#00f2fe');
-    angleLabel.position.set(0.35, 1.65, 1.35);
-    angleLabel.scale.set(2.6, 0.8, 1);
-    this.cadAnnotationsGroup.add(angleLabel);
-
-    // CAD curved arc
-    const arcPoints = [];
-    for (let a = 0; a <= 20; a++) {
-      const ang = Math.PI * 0.15 + (a / 20) * Math.PI * 0.45;
-      arcPoints.push(new THREE.Vector3(Math.cos(ang) * 0.8 + 0.2, Math.sin(ang) * 0.6 + 1.25, 1.3));
-    }
-    const arcGeo = new THREE.BufferGeometry().setFromPoints(arcPoints);
-    const arcMat = new THREE.LineBasicMaterial({ color: 0x00f2fe, linewidth: 1.5 });
-    this.cadAnnotationsGroup.add(new THREE.Line(arcGeo, arcMat));
-    this.disposables.push(arcGeo, arcMat);
-  }
-
-  createDimensionLineWithArrows(pA, pB, colorHex = 0x00f2fe) {
-    const points = [pA, pB];
-    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-    const lineMat = new THREE.LineBasicMaterial({ color: colorHex, linewidth: 1.5 });
-    const line = new THREE.Line(lineGeo, lineMat);
-    this.cadAnnotationsGroup.add(line);
-
-    const dir = new THREE.Vector3().subVectors(pB, pA).normalize();
-    const perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize().multiplyScalar(0.22);
-
-    const tick1Geo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3().copy(pA).add(perp),
-      new THREE.Vector3().copy(pA).sub(perp)
-    ]);
-    const tick2Geo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3().copy(pB).add(perp),
-      new THREE.Vector3().copy(pB).sub(perp)
-    ]);
-    this.cadAnnotationsGroup.add(new THREE.Line(tick1Geo, lineMat));
-    this.cadAnnotationsGroup.add(new THREE.Line(tick2Geo, lineMat));
-    this.disposables.push(lineGeo, tick1Geo, tick2Geo, lineMat);
-  }
-
-  createCADTextSprite(text, fontSize = 26, textColor = '#00f2fe') {
-    const canvas = document.createElement('canvas');
-    canvas.width = 380;
-    canvas.height = 96;
-    const ctx = canvas.getContext('2d');
-
-    ctx.fillStyle = 'rgba(7, 18, 38, 0.75)';
-    ctx.roundRect(4, 4, 372, 88, 12);
-    ctx.fill();
-
-    ctx.strokeStyle = `${textColor}55`;
-    ctx.lineWidth = 2;
-    ctx.roundRect(4, 4, 372, 88, 12);
-    ctx.stroke();
-
-    ctx.fillStyle = textColor;
-    ctx.font = `600 ${fontSize}px "Outfit", "Inter", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, 190, 48);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-    const sprite = new THREE.Sprite(material);
-    this.disposables.push(texture, material);
-    return sprite;
-  }
-
-  // ==================== CAD 3D Coordinate Trihedron ====================
-  createCADTrihedron() {
-    this.trihedronGroup = new THREE.Group();
-    this.trihedronGroup.position.set(-6.2, -2.2, 5.2);
-    this.universeGroup.add(this.trihedronGroup);
-
-    const len = 1.3;
-    const xGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(len, 0, 0)]);
-    const xMat = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 });
-    this.trihedronGroup.add(new THREE.Line(xGeo, xMat));
-
-    const yGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -len)]);
-    const yMat = new THREE.LineBasicMaterial({ color: 0x10b981, linewidth: 2 });
-    this.trihedronGroup.add(new THREE.Line(yGeo, yMat));
-
-    const zGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, len, 0)]);
-    const zMat = new THREE.LineBasicMaterial({ color: 0x00f2fe, linewidth: 2 });
-    this.trihedronGroup.add(new THREE.Line(zGeo, zMat));
-
-    const lX = this.createCADTextSprite('X', 22, '#ef4444');
-    lX.position.set(len + 0.25, 0, 0);
-    lX.scale.set(0.7, 0.45, 1);
-    this.trihedronGroup.add(lX);
-
-    const lY = this.createCADTextSprite('Y', 22, '#10b981');
-    lY.position.set(0, 0, -len - 0.25);
-    lY.scale.set(0.7, 0.45, 1);
-    this.trihedronGroup.add(lY);
-
-    const lZ = this.createCADTextSprite('Z', 22, '#00f2fe');
-    lZ.position.set(0, len + 0.25, 0);
-    lZ.scale.set(0.7, 0.45, 1);
-    this.trihedronGroup.add(lZ);
-
-    this.disposables.push(xGeo, yGeo, zGeo, xMat, yMat, zMat);
-  }
-
-  // ==================== 12 Floating Construction Feature Nodes ====================
+  // ==================== 12 Intelligent Feature Nodes ====================
   createFeatureNodes() {
     this.nodesGroup = new THREE.Group();
     this.universeGroup.add(this.nodesGroup);
 
-    CONSTRUCTION_FEATURES.forEach((feature, idx) => {
+    CONSTRUCTION_FEATURES.forEach((feature) => {
       const nodeGroup = new THREE.Group();
-      nodeGroup.userData = { feature, index: idx, id: feature.id };
+      nodeGroup.name = `feature-node-${feature.id}`;
+      nodeGroup.userData = {
+        featureId: feature.id,
+        featureData: feature,
+        isFeatureNode: true,
+        baseAngle: feature.orbitAngle,
+        radiusX: feature.radiusX * 1.2,
+        radiusY: feature.radiusY * 1.2,
+        elevation: feature.elevation,
+        floatOffset: Math.random() * Math.PI * 2
+      };
 
-      const angle = feature.orbitAngle;
-      const x = Math.cos(angle) * (feature.radiusX || 7.6);
-      const z = Math.sin(angle) * (feature.radiusY || 5.4);
-      const y = (feature.elevation || 0) * 1.12;
+      const posX = Math.cos(feature.orbitAngle) * (feature.radiusX * 1.2);
+      const posZ = Math.sin(feature.orbitAngle) * (feature.radiusY * 1.2);
+      const posY = feature.elevation + 1.2;
+      nodeGroup.position.set(posX, posY, posZ);
+      nodeGroup.userData.basePos = new THREE.Vector3(posX, posY, posZ);
 
-      nodeGroup.position.set(x, y, z);
-      nodeGroup.userData.basePos = new THREE.Vector3(x, y, z);
-      nodeGroup.userData.floatOffset = idx * 0.55;
-
-      // 1. Core Glowing Sphere
-      const sphereGeo = new THREE.SphereGeometry(0.35, 16, 14);
-      const sphereMat = new THREE.MeshStandardMaterial({
+      // Core Glass Bead Sphere
+      const coreGeo = new THREE.SphereGeometry(0.26, 24, 24);
+      const coreMat = new THREE.MeshStandardMaterial({
         color: feature.colorHex,
         emissive: feature.colorHex,
-        emissiveIntensity: 0.95,
+        emissiveIntensity: 0.7,
         roughness: 0.2,
-        metalness: 0.8
+        metalness: 0.5
       });
-      const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
-      coreSphere.userData = { featureId: feature.id, isRaycastTarget: true };
-      nodeGroup.add(coreSphere);
-      this.disposables.push(sphereGeo, sphereMat);
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      nodeGroup.add(coreMesh);
 
-      // 2. Outer Wireframe Shell (Icosahedron)
-      const shellGeo = new THREE.IcosahedronGeometry(0.54, 1);
-      const shellWire = new THREE.WireframeGeometry(shellGeo);
-      const shellMat = new THREE.LineBasicMaterial({
-        color: feature.colorHex,
-        transparent: true,
-        opacity: 0.85,
-        blending: THREE.AdditiveBlending
-      });
-      const shellMesh = new THREE.LineSegments(shellWire, shellMat);
-      nodeGroup.add(shellMesh);
-      this.disposables.push(shellGeo, shellWire, shellMat);
-
-      // 3. Neon Gyro Ring
-      const gyroPoints = [];
-      for (let i = 0; i <= 32; i++) {
-        const theta = (i / 32) * Math.PI * 2;
-        gyroPoints.push(new THREE.Vector3(Math.cos(theta) * 0.68, Math.sin(theta) * 0.68, 0));
-      }
-      const gyroGeo = new THREE.BufferGeometry().setFromPoints(gyroPoints);
-      const gyroMat = new THREE.LineBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.55,
-        blending: THREE.AdditiveBlending
-      });
-      const gyroRing = new THREE.LineLoop(gyroGeo, gyroMat);
-      gyroRing.rotation.x = Math.PI / 3;
-      gyroRing.rotation.y = (idx % 3) * 0.45;
-      nodeGroup.add(gyroRing);
-      this.disposables.push(gyroGeo, gyroMat);
-
-      // 4. Local Neon Point Light
-      const light = new THREE.PointLight(feature.colorHex, 1.4, 5.5);
-      nodeGroup.add(light);
+      // Outer Wireframe Gyro Ring
+      const ringGeo = new THREE.TorusGeometry(0.42, 0.02, 12, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: feature.colorHex, transparent: true, opacity: 0.75 });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      nodeGroup.add(ringMesh);
 
       this.nodesGroup.add(nodeGroup);
       this.featureNodeMeshes.push({
         group: nodeGroup,
-        core: coreSphere,
-        shell: shellMesh,
-        gyro: gyroRing,
-        light: light,
-        feature: feature
+        core: coreMesh,
+        ring: ringMesh,
+        feature
       });
+
+      this.disposables.push(coreGeo, coreMat, ringGeo, ringMat);
     });
   }
 
-  // ==================== Conduits Connecting Nodes to House ====================
+  // ==================== Dynamic Conduits Connecting Nodes to Villa ====================
   createHouseConduits() {
     this.conduitsGroup = new THREE.Group();
     this.universeGroup.add(this.conduitsGroup);
+    this.houseConnectionLines = [];
 
     this.featureNodeMeshes.forEach((nodeItem) => {
-      const feature = nodeItem.feature;
-      const lineGeo = new THREE.BufferGeometry();
-      const positions = new Float32Array(6);
-      lineGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const zoneKey = nodeItem.feature.connectedBuildingZone || 'interior';
+      const pNode = nodeItem.group.position;
+      const targetPos = this.houseAttachmentPoints[zoneKey] || new THREE.Vector3(0, 2, 0);
 
-      const lineMat = new THREE.LineBasicMaterial({
-        color: feature.colorHex,
+      const points = [pNode.clone(), targetPos.clone()];
+      const conduitGeo = new THREE.BufferGeometry().setFromPoints(points);
+      const conduitMat = new THREE.LineBasicMaterial({
+        color: nodeItem.feature.colorHex,
         transparent: true,
         opacity: 0.35,
-        blending: THREE.AdditiveBlending
+        linewidth: 1
       });
 
-      const lineMesh = new THREE.Line(lineGeo, lineMat);
-      this.conduitsGroup.add(lineMesh);
-      this.disposables.push(lineGeo, lineMat);
+      const conduitLine = new THREE.Line(conduitGeo, conduitMat);
+      this.conduitsGroup.add(conduitLine);
 
       this.houseConnectionLines.push({
-        mesh: lineMesh,
-        geometry: lineGeo,
-        material: lineMat,
-        nodeItem: nodeItem,
-        featureId: feature.id,
-        targetZoneKey: feature.connectedBuildingZone || 'foundation-slab'
+        line: conduitLine,
+        geometry: conduitGeo,
+        material: conduitMat,
+        nodeItem,
+        targetZoneKey: zoneKey
       });
+
+      this.disposables.push(conduitGeo, conduitMat);
     });
   }
 
-  // ==================== Animated Data Pulse System ====================
+  // ==================== Data Pulse Packets ====================
   createDataPulseSystem() {
     this.dataPacketsGroup = new THREE.Group();
     this.universeGroup.add(this.dataPacketsGroup);
 
-    const count = 20;
-    const packetGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
+    const numPackets = 16;
+    const positions = new Float32Array(numPackets * 3);
+    const colors = new Float32Array(numPackets * 3);
 
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = 0;
-      positions[i * 3 + 1] = 0;
-      positions[i * 3 + 2] = 0;
-
-      colors[i * 3] = 0.0;
-      colors[i * 3 + 1] = 0.95;
-      colors[i * 3 + 2] = 1.0;
-
+    for (let i = 0; i < numPackets; i++) {
       this.dataPackets.push({
-        conduitIndex: i % (this.houseConnectionLines.length || 1),
+        conduitIndex: i % this.houseConnectionLines.length,
         progress: Math.random(),
-        speed: 0.35 + Math.random() * 0.4
+        speed: 0.25 + Math.random() * 0.35
       });
+
+      colors[i * 3] = 0.22;
+      colors[i * 3 + 1] = 0.74;
+      colors[i * 3 + 2] = 0.97;
     }
 
+    const packetGeo = new THREE.BufferGeometry();
     packetGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     packetGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const packetMat = new THREE.PointsMaterial({
-      size: 0.28,
+      size: 0.18,
       vertexColors: true,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.9,
       blending: THREE.AdditiveBlending
     });
 
@@ -953,582 +342,527 @@ export class ConstructionHouse3D {
     this.disposables.push(packetGeo, packetMat);
   }
 
-  // ==================== Background Construction Data Particles ====================
-  createConstructionDataParticles() {
-    const isMobile = window.innerWidth < 768;
-    const count = isMobile ? 300 : 700;
-
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const cyan = new THREE.Color(0x00f2fe);
-    const purple = new THREE.Color(0xa855f7);
-    const gold = new THREE.Color(0xfbbf24);
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 44;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 32;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 36 - 2;
-
-      const pick = Math.random();
-      const c = pick < 0.5 ? cyan : (pick < 0.8 ? purple : gold);
-      colors[i * 3] = c.r;
-      colors[i * 3 + 1] = c.g;
-      colors[i * 3 + 2] = c.b;
-    }
-
-    const particleGeo = new THREE.BufferGeometry();
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const particleMat = new THREE.PointsMaterial({
-      size: 0.16,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.75,
-      blending: THREE.AdditiveBlending
-    });
-
-    this.particlesSystem = new THREE.Points(particleGeo, particleMat);
-    this.scene.add(this.particlesSystem);
-    this.disposables.push(particleGeo, particleMat);
-  }
-
-  // ==================== Edge Tracer Pulse System ====================
-  createEdgeTracerSystem() {
-    const tracerCount = 12;
-    const tracerGeo = new THREE.BufferGeometry();
-    const tracerPositions = new Float32Array(tracerCount * 3);
-
-    for (let i = 0; i < tracerCount * 3; i++) {
-      tracerPositions[i] = 0;
-    }
-    tracerGeo.setAttribute('position', new THREE.BufferAttribute(tracerPositions, 3));
-
-    const tracerMat = new THREE.PointsMaterial({
-      color: 0x00f2fe,
-      size: 0.32,
-      transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending
-    });
-
-    this.edgeTracerMesh = new THREE.Points(tracerGeo, tracerMat);
-    this.houseGroup.add(this.edgeTracerMesh);
-    this.disposables.push(tracerGeo, tracerMat);
-
-    this.perimeterWaypoints = [
-      new THREE.Vector3(-2.8, -0.05, -2.0),
-      new THREE.Vector3(2.3, -0.05, -2.0),
-      new THREE.Vector3(2.3, -0.05, 2.2),
-      new THREE.Vector3(-0.3, -0.05, 2.2),
-      new THREE.Vector3(-2.8, -0.05, 1.3),
-      new THREE.Vector3(-2.8, 1.55, 1.3),
-      new THREE.Vector3(0.0, 3.25, -0.4),
-      new THREE.Vector3(2.5, 2.38, 0.4)
-    ];
-
-    this.tracers = [];
-    for (let t = 0; t < tracerCount; t++) {
-      this.tracers.push({
-        progress: t / tracerCount,
-        speed: 0.18 + Math.random() * 0.1
-      });
-    }
-  }
-
-  // ==================== Special Interactive Feature 3D Systems ====================
-  createSpecialReactionSystems() {
-    // 1. AI Neural-Network Effect around top node
-    this.neuralNetworkGroup = new THREE.Group();
-    this.neuralNetworkGroup.position.set(0, 4.0, 0);
-    this.neuralNetworkGroup.visible = false;
-    this.universeGroup.add(this.neuralNetworkGroup);
-
-    const nnNodes = 14;
-    const nnPoints = [];
-    for (let i = 0; i < nnNodes; i++) {
-      nnPoints.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 3.5,
-        (Math.random() - 0.5) * 2.2,
-        (Math.random() - 0.5) * 3.0
-      ));
-    }
-    const nnGeo = new THREE.BufferGeometry().setFromPoints(nnPoints);
-    const nnMat = new THREE.PointsMaterial({
-      color: 0xc084fc,
-      size: 0.35,
-      transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending
-    });
-    this.neuralNetworkGroup.add(new THREE.Points(nnGeo, nnMat));
-
-    const lineIndices = [];
-    for (let i = 0; i < nnNodes; i++) {
-      for (let j = i + 1; j < nnNodes; j++) {
-        if (nnPoints[i].distanceTo(nnPoints[j]) < 2.2) {
-          lineIndices.push(nnPoints[i], nnPoints[j]);
-        }
-      }
-    }
-    const nnLinesGeo = new THREE.BufferGeometry().setFromPoints(lineIndices);
-    const nnLinesMat = new THREE.LineBasicMaterial({
-      color: 0xa855f7,
-      transparent: true,
-      opacity: 0.6,
-      blending: THREE.AdditiveBlending
-    });
-    this.neuralNetworkGroup.add(new THREE.LineSegments(nnLinesGeo, nnLinesMat));
-    this.disposables.push(nnGeo, nnMat, nnLinesGeo, nnLinesMat);
-
-    // 2. Material Recommendation: Floating 3D Material Indicators
-    this.materialCubesGroup = new THREE.Group();
-    this.materialCubesGroup.visible = false;
-    this.universeGroup.add(this.materialCubesGroup);
-
-    const materials = [
-      { name: 'OPC 53 Cement', color: 0x94a3b8, pos: new THREE.Vector3(3.2, 0.5, 2.5) },
-      { name: 'Fe-550D Steel', color: 0x38bdf8, pos: new THREE.Vector3(3.4, 1.8, 1.0) },
-      { name: 'AAC Blocks', color: 0xcbd5e1, pos: new THREE.Vector3(-3.4, 0.4, 2.2) },
-      { name: 'Smart Glass', color: 0x00f2fe, pos: new THREE.Vector3(-3.2, 1.8, 0.8) },
-      { name: 'Weather Coating', color: 0xf59e0b, pos: new THREE.Vector3(0, 3.8, 2.4) },
-      { name: 'Vitrified Tiles', color: 0xa855f7, pos: new THREE.Vector3(0, -1.2, 3.6) }
-    ];
-
-    materials.forEach(mat => {
-      const cGeo = new THREE.BoxGeometry(0.42, 0.42, 0.42);
-      const cMat = new THREE.MeshStandardMaterial({
-        color: mat.color,
-        emissive: mat.color,
-        emissiveIntensity: 0.4,
-        roughness: 0.2,
-        metalness: 0.8
-      });
-      const cube = new THREE.Mesh(cGeo, cMat);
-      cube.position.copy(mat.pos);
-      this.addWireframeEdges(cube, cGeo, 0xffffff, 0.9);
-
-      const label = this.createCADTextSprite(mat.name, 20, '#ffffff');
-      label.position.set(mat.pos.x, mat.pos.y + 0.4, mat.pos.z);
-      label.scale.set(1.6, 0.5, 1);
-
-      this.materialCubesGroup.add(cube);
-      this.materialCubesGroup.add(label);
-      this.disposables.push(cGeo, cMat);
-    });
-
-    // 3. Land Area Measurement: Digital Ground Plot Grid & Boundary
-    this.landMeasurementGroup = new THREE.Group();
-    this.landMeasurementGroup.position.y = -1.92;
-    this.landMeasurementGroup.visible = false;
-    this.universeGroup.add(this.landMeasurementGroup);
-
-    const boundaryPts = [
-      new THREE.Vector3(-4.5, 0.05, -3.8),
-      new THREE.Vector3(4.5, 0.05, -3.8),
-      new THREE.Vector3(4.5, 0.05, 4.2),
-      new THREE.Vector3(-4.5, 0.05, 4.2),
-      new THREE.Vector3(-4.5, 0.05, -3.8)
-    ];
-    const bGeo = new THREE.BufferGeometry().setFromPoints(boundaryPts);
-    const bMat = new THREE.LineBasicMaterial({
-      color: 0x84cc16,
-      linewidth: 2,
-      blending: THREE.AdditiveBlending
-    });
-    this.landMeasurementGroup.add(new THREE.Line(bGeo, bMat));
-
-    const plotLabel = this.createCADTextSprite('Plot: 1,200 sq.ft (30\' × 40\')', 24, '#84cc16');
-    plotLabel.position.set(0, 0.35, 4.8);
-    plotLabel.scale.set(3.2, 0.85, 1);
-    this.landMeasurementGroup.add(plotLabel);
-    this.disposables.push(bGeo, bMat);
-
-    // 4. Safety Monitoring: Warning Perimeters & Beacons
-    this.safetyZoneGroup = new THREE.Group();
-    this.safetyZoneGroup.visible = false;
-    this.universeGroup.add(this.safetyZoneGroup);
-
-    const beaconGeo = new THREE.RingGeometry(0.8, 1.0, 32);
-    const beaconMat = new THREE.MeshBasicMaterial({
-      color: 0xef4444,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.65,
-      blending: THREE.AdditiveBlending
-    });
-    const beacon1 = new THREE.Mesh(beaconGeo, beaconMat);
-    beacon1.rotation.x = Math.PI / 2;
-    beacon1.position.set(-1.6, 0.02, 2.1);
-    this.safetyZoneGroup.add(beacon1);
-
-    const safetyLabel = this.createCADTextSprite('Hazard Zone Laser Geofence', 22, '#ef4444');
-    safetyLabel.position.set(-1.6, 1.2, 2.1);
-    safetyLabel.scale.set(2.8, 0.75, 1);
-    this.safetyZoneGroup.add(safetyLabel);
-    this.disposables.push(beaconGeo, beaconMat);
-  }
-
-  // ==================== Glassmorphism HTML Telemetry Labels ====================
+  // ==================== HTML Labels Overlay ====================
   createHtmlLabels() {
     if (!this.labelsOverlay) return;
     this.labelsOverlay.innerHTML = '';
     this.htmlLabelElements.clear();
 
-    CONSTRUCTION_FEATURES.forEach((feature) => {
+    this.featureNodeMeshes.forEach((nodeItem) => {
+      const f = nodeItem.feature;
       const label = document.createElement('div');
-      label.className = `skill-glass-label feature-${feature.id}`;
-      label.setAttribute('tabindex', '0');
-      label.setAttribute('role', 'button');
-      label.setAttribute('aria-label', `Inspect ${feature.name}`);
-      label.dataset.featureId = feature.id;
-
+      label.className = 'skill-glass-label';
+      label.dataset.featureId = f.id;
       label.innerHTML = `
-        <span class="label-dot" style="background-color:${feature.color};box-shadow:0 0 12px ${feature.glowColor}"></span>
-        <span class="label-text">${feature.shortName || feature.name}</span>
-        <span class="label-icon"><i class="fas ${feature.icon}"></i></span>
+        <span class="label-dot" style="background:${f.color};box-shadow:0 0 10px ${f.color}"></span>
+        <span class="label-text">${f.shortName || f.name}</span>
+        <i class="fas ${f.icon} label-icon" style="color:${f.color}"></i>
       `;
-
-      label.addEventListener('mouseenter', () => this.handleFeatureHover(feature.id));
-      label.addEventListener('mouseleave', () => this.handleFeatureHover(null));
 
       label.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.handleFeatureSelect(feature.id);
+        this.handleFeatureSelect(f.id);
       });
 
-      label.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.handleFeatureSelect(feature.id);
-        }
-      });
+      label.addEventListener('mouseenter', () => this.handleFeatureHover(f.id));
+      label.addEventListener('mouseleave', () => this.handleFeatureHover(null));
 
       this.labelsOverlay.appendChild(label);
-      this.htmlLabelElements.set(feature.id, label);
+      this.htmlLabelElements.set(f.id, label);
     });
   }
 
-  // ==================== 3D to 2D Label Projection & Conduits ====================
-  updateLabelsAndConduits() {
-    if (!this.labelsOverlay || !this.camera) return;
+  // ==================== Floating Architectural Controls HUD ====================
+  injectArchitecturalControlsHUD() {
+    const parent = this.mountEl.parentElement;
+    if (!parent) return;
 
-    const overlayRect = this.labelsOverlay.getBoundingClientRect();
-    const w = overlayRect.width || this.width || 920;
-    const h = overlayRect.height || this.height || 680;
+    // Check if HUD already injected
+    let hud = parent.querySelector('#villaArchHud');
+    if (hud) hud.remove();
 
-    const labelCoords = [];
-    const svgLinesHtml = [];
+    hud = document.createElement('div');
+    hud.id = 'villaArchHud';
+    hud.className = 'villa-arch-hud';
+    hud.innerHTML = `
+      <!-- Top Modes Ribbon -->
+      <div class="arch-hud-top-ribbon">
+        <div class="arch-hud-modes">
+          <button class="hud-btn active" data-mode="exterior" title="360° Perspective Hero View">
+            <i class="fas fa-arrows-spin"></i> <span>360° Orbit</span>
+          </button>
+          <button class="hud-btn" data-mode="interior" title="Interior Living Room & Foyer View">
+            <i class="fas fa-couch"></i> <span>Interior</span>
+          </button>
+          <button class="hud-btn" data-mode="top" title="Top-Down Dollhouse View">
+            <i class="fas fa-layer-group"></i> <span>Top View</span>
+          </button>
+          <button class="hud-btn" data-mode="floorplan" title="Architectural Cutaway Floor Plan with CAD Dimensions">
+            <i class="fas fa-drafting-compass"></i> <span>Floor Plan</span>
+          </button>
+          <button class="hud-btn" data-mode="walkthrough" title="First-Person Interactive Walkthrough (WASD / Arrows)">
+            <i class="fas fa-person-walking"></i> <span>Walkthrough</span>
+          </button>
+          <button class="hud-btn" id="btnHudDayNight" title="Toggle Natural Sunlight vs Luxury Twilight Accent Lighting">
+            <i class="fas fa-sun" style="color:#f59e0b"></i> <span>Day / Night</span>
+          </button>
+        </div>
 
-    const worldPos = new THREE.Vector3();
-    const screenPos = new THREE.Vector3();
+        <!-- Parametric Plot & Material Bar -->
+        <div class="arch-hud-parametric">
+          <!-- Plot Size Presets -->
+          <div class="hud-pill-group" title="Parametric Plot Dimensions">
+            <span class="hud-pill-label"><i class="fas fa-ruler-combined"></i> Plot:</span>
+            <button class="hud-sub-btn active" data-plot="30x40">30×40'</button>
+            <button class="hud-sub-btn" data-plot="40x60">40×60'</button>
+            <button class="hud-sub-btn" data-plot="50x80">50×80'</button>
+          </div>
 
-    this.featureNodeMeshes.forEach((nodeItem) => {
-      const feature = nodeItem.feature;
-      const labelEl = this.htmlLabelElements.get(feature.id);
-      if (!labelEl) return;
+          <!-- Floor Level Cutaway -->
+          <div class="hud-pill-group" title="Floor-by-Floor View Cutaway">
+            <span class="hud-pill-label"><i class="fas fa-building"></i> Floor:</span>
+            <button class="hud-sub-btn active" data-floor="all">All</button>
+            <button class="hud-sub-btn" data-floor="ground">Ground</button>
+            <button class="hud-sub-btn" data-floor="first">First</button>
+            <button class="hud-sub-btn" data-floor="roof">Roof</button>
+          </div>
 
-      const isVisibleCategory = this.activeCategory === 'ALL' || feature.category === this.activeCategory;
-      if (!isVisibleCategory) {
-        labelEl.style.display = 'none';
-        return;
-      } else {
-        labelEl.style.display = 'flex';
-      }
+          <!-- Facade Finish Swatches -->
+          <div class="hud-pill-group" title="Real-Time Exterior PBR Material Finishes">
+            <span class="hud-pill-label"><i class="fas fa-palette"></i> Facade:</span>
+            <button class="hud-mat-swatch active" data-mat="travertine" title="Travertine Stone" style="background:#dfd7cc"></button>
+            <button class="hud-mat-swatch" data-mat="concrete" title="Exposed Concrete" style="background:#9ca3af"></button>
+            <button class="hud-mat-swatch" data-mat="brick" title="Modern Linear Brick" style="background:#a0522d"></button>
+            <button class="hud-mat-swatch" data-mat="wood" title="Teak Wood Louvers" style="background:#b4743c"></button>
+            <button class="hud-mat-swatch" data-mat="slate" title="Anthracite Slate" style="background:#1e293b"></button>
+          </div>
 
-      nodeItem.group.getWorldPosition(worldPos);
-      screenPos.copy(worldPos).project(this.camera);
+          <!-- CAD Dimensions Toggle -->
+          <button class="hud-btn active" id="btnToggleDimensions" title="Toggle CAD Measurement Annotations">
+            <i class="fas fa-ruler"></i> <span>CAD: On</span>
+          </button>
+        </div>
+      </div>
 
-      if (screenPos.z > 1) {
-        labelEl.style.opacity = '0';
-        return;
-      }
+      <!-- Walkthrough Floating Guide & Touch D-Pad (Active in Walkthrough Mode) -->
+      <div class="arch-walkthrough-overlay hidden" id="archWalkthroughOverlay">
+        <div class="walkthrough-room-badge" id="archActiveRoomBadge">
+          <i class="fas fa-location-dot"></i> <span id="archActiveRoomText">Great Living Room</span>
+        </div>
+        <div class="walkthrough-nav-tip">
+          <i class="fas fa-keyboard"></i> <strong>W / A / S / D</strong> or <strong>Arrow Keys</strong> to Walk · Drag Mouse to Look
+        </div>
+        <div class="walkthrough-dpad">
+          <button class="dpad-key" data-key="KeyW"><i class="fas fa-chevron-up"></i></button>
+          <div class="dpad-row">
+            <button class="dpad-key" data-key="KeyA"><i class="fas fa-chevron-left"></i></button>
+            <button class="dpad-key" data-key="KeyS"><i class="fas fa-chevron-down"></i></button>
+            <button class="dpad-key" data-key="KeyD"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
 
-      const pxX = ((screenPos.x * 0.5) + 0.5) * w;
-      const pxY = ((-screenPos.y * 0.5) + 0.5) * h;
+      <!-- Bottom Live Construction Telemetry Banner -->
+      <div class="arch-hud-bottom-bar" id="archTelemetryBanner">
+        <div class="telemetry-item">
+          <span class="telemetry-label">Plot & Typology:</span>
+          <strong class="telemetry-val" id="telPlot">30' × 40' (3 BHK Luxury Villa)</strong>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Built-Up Area:</span>
+          <strong class="telemetry-val text-primary" id="telArea">1,860 Sq.Ft</strong>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Est. Construction:</span>
+          <strong class="telemetry-val text-success" id="telCost">₹32.5L - ₹36.8L</strong>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Vastu Score:</span>
+          <strong class="telemetry-val text-gold" id="telVastu">96% Compliant</strong>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Structural Grid:</span>
+          <strong class="telemetry-val" id="telStructure">14 Columns (M25 RCC)</strong>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Clear Heights:</span>
+          <strong class="telemetry-val" id="telHeight">10.2 Ft (3.1m)</strong>
+        </div>
+      </div>
+    `;
 
-      const angle = feature.orbitAngle;
-      const pushDistX = Math.cos(angle) * 38;
-      const pushDistY = -Math.sin(angle) * 28;
+    parent.appendChild(hud);
+    this.hudEl = hud;
 
-      let labelX = pxX + pushDistX;
-      let labelY = pxY + pushDistY;
-
-      labelX = Math.max(85, Math.min(w - 95, labelX));
-      labelY = Math.max(40, Math.min(h - 45, labelY));
-
-      labelCoords.push({ id: feature.id, nodeX: pxX, nodeY: pxY, labelX, labelY, color: feature.color });
-
-      labelEl.style.transform = `translate3d(${labelX}px, ${labelY}px, 0) translate(-50%, -50%)`;
-      labelEl.style.opacity = (this.hoveredFeatureId && this.hoveredFeatureId !== feature.id) ? '0.4' : '1';
+    // Attach HUD Event Listeners
+    // 1. View Modes
+    hud.querySelectorAll('.arch-hud-modes .hud-btn[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        hud.querySelectorAll('.arch-hud-modes .hud-btn[data-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.setVisualizationMode(btn.dataset.mode);
+      });
     });
 
-    if (this.svgLinesEl) {
-      labelCoords.forEach((coord) => {
-        const isHovered = this.hoveredFeatureId === coord.id;
-        const isSelected = this.selectedFeatureId === coord.id;
-        const strokeColor = isHovered || isSelected ? coord.color : 'rgba(0, 242, 254, 0.4)';
-        const strokeWidth = isHovered || isSelected ? 2.2 : 1.0;
-        const strokeDash = isHovered ? 'none' : '3,3';
-
-        svgLinesHtml.push(`
-          <line 
-            x1="${coord.nodeX}" y1="${coord.nodeY}" 
-            x2="${coord.labelX}" y2="${coord.labelY}" 
-            stroke="${strokeColor}" 
-            stroke-width="${strokeWidth}" 
-            stroke-dasharray="${strokeDash}"
-          />
-        `);
+    // 2. Day / Night Toggle
+    const dayNightBtn = hud.querySelector('#btnHudDayNight');
+    if (dayNightBtn) {
+      dayNightBtn.addEventListener('click', () => {
+        this.timeOfDay = this.timeOfDay === 'day' ? 'night' : 'day';
+        this.villaModel.setTimeOfDay(this.timeOfDay);
+        dayNightBtn.innerHTML = this.timeOfDay === 'night'
+          ? '<i class="fas fa-moon" style="color:#38bdf8"></i> <span>Night View</span>'
+          : '<i class="fas fa-sun" style="color:#f59e0b"></i> <span>Day View</span>';
       });
-      this.svgLinesEl.innerHTML = svgLinesHtml.join('');
+    }
+
+    // 3. Plot Preset Switches
+    hud.querySelectorAll('[data-plot]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        hud.querySelectorAll('[data-plot]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.setPlotPreset(btn.dataset.plot);
+      });
+    });
+
+    // 4. Floor Cutaways
+    hud.querySelectorAll('[data-floor]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        hud.querySelectorAll('[data-floor]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.setFloorCutaway(btn.dataset.floor);
+      });
+    });
+
+    // 5. Facade Material Finishes
+    hud.querySelectorAll('[data-mat]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        hud.querySelectorAll('[data-mat]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.setFacadeMaterial(btn.dataset.mat);
+      });
+    });
+
+    // 6. CAD Dimensions Toggle
+    const dimBtn = hud.querySelector('#btnToggleDimensions');
+    if (dimBtn) {
+      dimBtn.addEventListener('click', () => {
+        this.showDimensions = !this.showDimensions;
+        this.villaModel.toggleDimensions(this.showDimensions);
+        dimBtn.classList.toggle('active', this.showDimensions);
+        dimBtn.querySelector('span').textContent = this.showDimensions ? 'CAD: On' : 'CAD: Off';
+      });
+    }
+
+    // 7. Walkthrough On-Screen D-Pad Keys
+    hud.querySelectorAll('.dpad-key').forEach(btn => {
+      const k = btn.dataset.key;
+      const start = (e) => { e.preventDefault(); this.keys[k] = true; };
+      const end = (e) => { e.preventDefault(); this.keys[k] = false; };
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('mouseup', end);
+      btn.addEventListener('mouseleave', end);
+      btn.addEventListener('touchstart', start, { passive: false });
+      btn.addEventListener('touchend', end, { passive: false });
+    });
+  }
+
+  // ==================== Visualization Modes Controller ====================
+  setVisualizationMode(mode) {
+    this.viewMode = mode;
+    const wtOverlay = this.hudEl?.querySelector('#archWalkthroughOverlay');
+
+    if (mode === 'walkthrough') {
+      this.controls.enabled = false;
+      this.isRotating = false;
+      if (wtOverlay) wtOverlay.classList.remove('hidden');
+
+      // Set camera to eye height at Entrance Foyer
+      this.camera.position.set(0.5, 1.85, 3.8);
+      this.camera.lookAt(0.5, 1.85, -2.0);
+      this.fpsYaw = 0;
+      this.fpsPitch = 0;
+    } else {
+      this.controls.enabled = true;
+      if (wtOverlay) wtOverlay.classList.add('hidden');
+
+      if (mode === 'interior') {
+        this.controls.target.set(1.5, 1.4, 0.4);
+        this.smoothTransitionCamera(new THREE.Vector3(1.2, 1.6, 2.8), new THREE.Vector3(1.5, 1.4, -0.6));
+      } else if (mode === 'top') {
+        this.controls.target.set(0, 0, 0);
+        this.smoothTransitionCamera(new THREE.Vector3(0, 24, 0.1), new THREE.Vector3(0, 0, 0));
+      } else if (mode === 'floorplan') {
+        // Cut off upper floors for clean dollhouse architectural floor plan
+        this.setFloorCutaway('ground');
+        this.controls.target.set(0, 0.8, 0);
+        this.smoothTransitionCamera(new THREE.Vector3(0, 16, 6), new THREE.Vector3(0, 0.8, -0.5));
+      } else {
+        // 'exterior' 360 Orbit
+        this.setFloorCutaway('all');
+        this.controls.target.set(0, 2.0, 0);
+        this.smoothTransitionCamera(new THREE.Vector3(15, 12, 16), new THREE.Vector3(0, 2.0, 0));
+      }
     }
   }
 
-  // ==================== Interactions & Real-Time Feature Reactions ====================
+  smoothTransitionCamera(targetPos, targetLookAt) {
+    this.targetCameraPos = targetPos;
+    this.targetCameraLookAt = targetLookAt;
+  }
+
+  setPlotPreset(preset) {
+    this.plotPreset = preset;
+    this.villaModel.setPlotPreset(preset);
+    this.houseAttachmentPoints = this.villaModel.getAttachmentPoints();
+    this.updateTelemetryHUD();
+  }
+
+  setFloorCutaway(floor) {
+    this.activeFloor = floor;
+    this.villaModel.setFloorFilter(floor);
+  }
+
+  setFacadeMaterial(matKey) {
+    this.activeMaterial = matKey;
+    this.villaModel.setMaterialCladding(matKey);
+  }
+
+  updateTelemetryHUD() {
+    if (!this.hudEl || !this.villaModel) return;
+    const tel = this.villaModel.telemetry;
+    const pEl = this.hudEl.querySelector('#telPlot');
+    const aEl = this.hudEl.querySelector('#telArea');
+    const cEl = this.hudEl.querySelector('#telCost');
+    const vEl = this.hudEl.querySelector('#telVastu');
+    const sEl = this.hudEl.querySelector('#telStructure');
+    const hEl = this.hudEl.querySelector('#telHeight');
+
+    if (pEl) pEl.textContent = `${tel.preset.replace('x', '×')}' (${tel.bhk})`;
+    if (aEl) aEl.textContent = tel.builtUpArea;
+    if (cEl) cEl.textContent = tel.estCost;
+    if (vEl) vEl.textContent = tel.vastuScore;
+    if (sEl) sEl.textContent = tel.rccCols;
+    if (hEl) hEl.textContent = tel.clearHeight;
+  }
+
+  // ==================== Event Listeners ====================
+  setupEventListeners() {
+    this.onResize = this.onResize.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
+    this.onCanvasClick = this.onCanvasClick.bind(this);
+
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('keyup', this.onKeyUp);
+
+    if (this.mountEl) {
+      this.mountEl.addEventListener('mousemove', this.onMouseMove);
+      this.mountEl.addEventListener('mousedown', this.onMouseDown);
+      this.mountEl.addEventListener('mouseup', this.onMouseUp);
+      this.mountEl.addEventListener('click', this.onCanvasClick);
+      this.mountEl.addEventListener('mouseleave', () => {
+        this.isMouseDown = false;
+        this.handleFeatureHover(null);
+      });
+    }
+
+    // Detail card close button
+    const closeBtn = this.detailCardEl?.querySelector('#skillCardCloseBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        this.handleFeatureSelect(null);
+      });
+    }
+
+    // Category filters on skillsPage
+    const filtersContainer = document.getElementById('skillCategoryFilters');
+    if (filtersContainer) {
+      filtersContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.skill-filter-btn');
+        if (!btn) return;
+        filtersContainer.querySelectorAll('.skill-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.setCategoryFilter(btn.dataset.category);
+      });
+    }
+  }
+
+  onKeyDown(e) {
+    if (this.viewMode === 'walkthrough') {
+      if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        this.keys[e.code] = true;
+      }
+    }
+  }
+
+  onKeyUp(e) {
+    if (this.viewMode === 'walkthrough') {
+      if (['KeyW', 'KeyS', 'KeyA', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        this.keys[e.code] = false;
+      }
+    }
+  }
+
+  onMouseDown(e) {
+    this.isMouseDown = true;
+    this.lastMousePos = { x: e.clientX, y: e.clientY };
+  }
+
+  onMouseUp() {
+    this.isMouseDown = false;
+  }
+
+  onMouseMove(e) {
+    const rect = this.mountEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    this.normalizedPointer.x = (x / rect.width) * 2 - 1;
+    this.normalizedPointer.y = -(y / rect.height) * 2 + 1;
+
+    if (this.viewMode === 'walkthrough' && this.isMouseDown) {
+      const dx = e.clientX - this.lastMousePos.x;
+      const dy = e.clientY - this.lastMousePos.y;
+      this.lastMousePos = { x: e.clientX, y: e.clientY };
+
+      this.fpsYaw -= dx * 0.0045;
+      this.fpsPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, this.fpsPitch - dy * 0.0045));
+
+      const dir = new THREE.Vector3(
+        Math.sin(this.fpsYaw) * Math.cos(this.fpsPitch),
+        Math.sin(this.fpsPitch),
+        -Math.cos(this.fpsYaw) * Math.cos(this.fpsPitch)
+      );
+      this.camera.lookAt(this.camera.position.clone().add(dir));
+    }
+  }
+
+  onCanvasClick(e) {
+    if (this.viewMode === 'walkthrough') return;
+
+    this.raycaster.setFromCamera(this.normalizedPointer, this.camera);
+    const meshes = this.featureNodeMeshes.map(n => n.core);
+    const intersects = this.raycaster.intersectObjects(meshes, true);
+
+    if (intersects.length > 0) {
+      const hit = intersects[0];
+      const nodeGroup = hit.object.parent;
+      if (nodeGroup && nodeGroup.userData.featureId) {
+        this.handleFeatureSelect(nodeGroup.userData.featureId);
+      }
+    }
+  }
+
+  onResize() {
+    if (!this.mountEl || !this.renderer || !this.camera) return;
+    const rect = this.mountEl.getBoundingClientRect();
+    const w = rect.width || this.mountEl.clientWidth || 960;
+    const h = rect.height || this.mountEl.clientHeight || 700;
+
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
+  }
+
+  setupIntersectionObserver() {
+    if ('IntersectionObserver' in window) {
+      this.observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          this.isInViewport = entry.isIntersecting;
+        });
+      }, { threshold: 0.1 });
+
+      if (this.container) {
+        this.observer.observe(this.container);
+      }
+    }
+
+    if ('ResizeObserver' in window && this.mountEl) {
+      this.resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+            this.onResize();
+          }
+        }
+      });
+      this.resizeObserver.observe(this.mountEl);
+    }
+  }
+
+  // ==================== Feature Selection & Detail Card ====================
   handleFeatureHover(featureId) {
-    if (this.hoveredFeatureId === featureId) return;
     this.hoveredFeatureId = featureId;
 
-    this.featureNodeMeshes.forEach((nodeItem) => {
-      const isThis = nodeItem.feature.id === featureId;
-      const isConnected = featureId && nodeItem.feature.connections.includes(featureId);
-
-      if (isThis) {
-        nodeItem.core.scale.set(1.45, 1.45, 1.45);
-        nodeItem.core.material.emissiveIntensity = 2.2;
-        nodeItem.shell.scale.set(1.5, 1.5, 1.5);
-        nodeItem.shell.material.opacity = 1.0;
-        nodeItem.light.intensity = 3.2;
-      } else if (isConnected) {
-        nodeItem.core.scale.set(1.15, 1.15, 1.15);
-        nodeItem.core.material.emissiveIntensity = 1.35;
-        nodeItem.shell.material.opacity = 0.85;
-        nodeItem.light.intensity = 1.8;
+    this.htmlLabelElements.forEach((label, id) => {
+      if (featureId && id === featureId) {
+        label.classList.add('hovered');
       } else {
-        nodeItem.core.scale.set(1.0, 1.0, 1.0);
-        nodeItem.core.material.emissiveIntensity = featureId ? 0.35 : 0.95;
-        nodeItem.shell.scale.set(1.0, 1.0, 1.0);
-        nodeItem.shell.material.opacity = featureId ? 0.25 : 0.85;
-        nodeItem.light.intensity = featureId ? 0.4 : 1.4;
+        label.classList.remove('hovered');
       }
     });
 
-    this.houseConnectionLines.forEach((conn) => {
-      const isThis = conn.featureId === featureId;
-      conn.material.opacity = isThis ? 1.0 : (featureId ? 0.1 : 0.35);
-    });
-
-    this.htmlLabelElements.forEach((el, id) => {
-      el.classList.toggle('hovered', id === featureId);
+    this.houseConnectionLines.forEach(conn => {
+      if (featureId && conn.nodeItem.feature.id === featureId) {
+        conn.material.opacity = 0.9;
+        conn.material.linewidth = 2;
+      } else {
+        conn.material.opacity = 0.35;
+      }
     });
   }
 
   handleFeatureSelect(featureId) {
-    this.selectedFeatureId = this.selectedFeatureId === featureId ? null : featureId;
+    this.selectedFeatureId = featureId;
 
-    this.htmlLabelElements.forEach((el, id) => {
-      el.classList.toggle('selected', id === this.selectedFeatureId);
+    this.htmlLabelElements.forEach((label, id) => {
+      label.classList.toggle('selected', id === featureId);
     });
 
-    this.update3DSpecialReactions(this.selectedFeatureId);
-
-    if (this.selectedFeatureId) {
-      const feature = getFeatureById(this.selectedFeatureId);
-      if (feature) {
-        this.displayDetailCard(feature);
+    if (!featureId) {
+      if (this.detailCardEl) {
+        this.detailCardEl.classList.remove('active');
+        this.detailCardEl.classList.add('hidden');
       }
-    } else {
-      this.hideDetailCard();
-    }
-  }
-
-  update3DSpecialReactions(featureId) {
-    if (this.neuralNetworkGroup) {
-      this.neuralNetworkGroup.visible = (featureId === 'ai-analysis');
+      return;
     }
 
-    if (this.interiorLight) {
-      this.interiorLight.intensity = (featureId === 'interior-design') ? 3.8 : 1.5;
-      this.interiorLight.color.setHex((featureId === 'interior-design') ? 0x00f2fe : 0x38bdf8);
-    }
-
-    if (this.materialCubesGroup) {
-      this.materialCubesGroup.visible = (featureId === 'materials' || featureId === 'material-tracking');
-    }
-
-    if (this.landMeasurementGroup) {
-      this.landMeasurementGroup.visible = (featureId === 'land-measurement');
-    }
-
-    if (this.safetyZoneGroup) {
-      this.safetyZoneGroup.visible = (featureId === 'safety-monitoring');
-    }
-
-    if (this.wallMaterials) {
-      const isPainting = featureId === 'painting';
-      this.wallMaterials.forEach(mat => {
-        mat.emissive = new THREE.Color(isPainting ? 0xf59e0b : 0x000000);
-        mat.emissiveIntensity = isPainting ? 0.35 : 0.0;
-      });
-    }
-  }
-
-  // ==================== Specialized Detail Telemetry Card ====================
-  displayDetailCard(feature) {
-    if (!this.detailCardEl) return;
+    const feature = getFeatureById(featureId);
+    if (!feature || !this.detailCardEl) return;
 
     const iconEl = this.detailCardEl.querySelector('#cardSkillIcon');
-    const categoryEl = this.detailCardEl.querySelector('#cardSkillCategory');
+    const catEl = this.detailCardEl.querySelector('#cardSkillCategory');
     const titleEl = this.detailCardEl.querySelector('#cardSkillTitle');
-    const summaryEl = this.detailCardEl.querySelector('#cardSkillSummary');
-    const levelEl = this.detailCardEl.querySelector('#cardSkillLevel');
+    const sumEl = this.detailCardEl.querySelector('#cardSkillSummary');
+    const lvlEl = this.detailCardEl.querySelector('#cardSkillLevel');
     const pctEl = this.detailCardEl.querySelector('#cardSkillPct');
-    const progressEl = this.detailCardEl.querySelector('#cardSkillProgressBar');
+    const barEl = this.detailCardEl.querySelector('#cardSkillProgressBar');
     const tagsEl = this.detailCardEl.querySelector('#cardSkillTags');
     const connEl = this.detailCardEl.querySelector('#cardSkillConnections');
 
-    if (iconEl) {
-      iconEl.innerHTML = `<i class="fas ${feature.icon}"></i>`;
-      iconEl.style.backgroundColor = `${feature.color}22`;
-      iconEl.style.color = feature.color;
-      iconEl.style.borderColor = feature.color;
+    if (iconEl) iconEl.innerHTML = `<i class="fas ${feature.icon}" style="color:${feature.color}"></i>`;
+    if (catEl) {
+      catEl.textContent = feature.category;
+      catEl.style.color = feature.color;
     }
-    if (categoryEl) categoryEl.textContent = feature.category;
-    if (titleEl) {
-      titleEl.textContent = feature.name;
-      titleEl.style.color = feature.color;
+    if (titleEl) titleEl.textContent = feature.name;
+    if (sumEl) sumEl.textContent = feature.summary;
+    if (lvlEl) lvlEl.textContent = feature.level;
+    if (pctEl) {
+      pctEl.textContent = feature.metric;
+      pctEl.style.color = feature.color;
     }
-    if (summaryEl) summaryEl.textContent = feature.summary;
-    if (levelEl) levelEl.textContent = feature.level;
-    if (pctEl) pctEl.textContent = feature.metric;
-    if (progressEl) {
-      progressEl.style.width = '100%';
-      progressEl.style.backgroundColor = feature.color;
-      progressEl.style.boxShadow = `0 0 14px ${feature.glowColor}`;
+    if (barEl) {
+      barEl.style.width = '95%';
+      barEl.style.background = feature.color;
     }
 
     if (tagsEl) {
-      let customWidget = '';
-
-      if (feature.id === 'painting' && feature.colorSwatches) {
-        customWidget = `
-          <div class="swatch-preview-box" style="width:100%;margin-bottom:10px">
-            <span style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Live Facade Finish Simulator:</span>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              ${feature.colorSwatches.map(s => `
-                <button class="paint-swatch-btn" data-color="${s.hex}" style="background:${s.hex};border:2px solid ${s.accent};width:32px;height:32px;border-radius:6px;cursor:pointer" title="${s.name} - ${s.desc}"></button>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }
-      else if (feature.id === 'cost-estimation' && feature.costBreakdown) {
-        customWidget = `
-          <div style="width:100%;font-size:0.78rem;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fff;font-weight:700">
-              <span>Total Estimated BOQ</span>
-              <span style="color:${feature.color}">${feature.totalEstimate}</span>
-            </div>
-            ${feature.costBreakdown.map(c => `
-              <div class="flex-between" style="margin-bottom:4px;color:var(--text-muted)">
-                <span>${c.item}</span>
-                <strong style="color:#fff">${c.cost}</strong>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      else if (feature.id === 'land-measurement' && feature.landTelemetry) {
-        customWidget = `
-          <div style="width:100%;font-size:0.78rem;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08)">
-            <div class="flex-between" style="margin-bottom:4px"><span>Plot Dimensions</span><strong style="color:${feature.color}">${feature.landTelemetry.plotDimensions}</strong></div>
-            <div class="flex-between" style="margin-bottom:4px"><span>Built-Up Area</span><strong style="color:#fff">${feature.landTelemetry.builtUpArea}</strong></div>
-            <div class="flex-between" style="margin-bottom:4px"><span>Ground Coverage</span><strong style="color:#fff">${feature.landTelemetry.groundCoverage}</strong></div>
-            <div class="flex-between" style="margin-bottom:4px"><span>Front Setback</span><strong style="color:#fff">${feature.landTelemetry.frontSetback}</strong></div>
-          </div>
-        `;
-      }
-      else if (feature.id === 'project-progress' && feature.milestones) {
-        customWidget = `
-          <div style="width:100%;font-size:0.78rem;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08)">
-            ${feature.milestones.map(m => `
-              <div style="margin-bottom:6px">
-                <div class="flex-between">
-                  <span><i class="fas ${m.icon}" style="margin-right:4px;color:${feature.color}"></i> ${m.stage}</span>
-                  <strong style="color:#fff">${m.progress}%</strong>
-                </div>
-                <div style="width:100%;height:4px;background:rgba(255,255,255,0.1);border-radius:999px;margin-top:2px">
-                  <div style="width:${m.progress}%;height:100%;background:${feature.color};border-radius:999px"></div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      else if (feature.id === 'safety-monitoring' && feature.safetyIndicators) {
-        customWidget = `
-          <div style="width:100%;font-size:0.78rem;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08)">
-            ${feature.safetyIndicators.map(s => `
-              <div class="flex-between" style="margin-bottom:4px">
-                <span>${s.zone}</span>
-                <span class="badge" style="background:${s.level === 'Safe' ? '#10b98122' : '#ef444422'};color:${s.level === 'Safe' ? '#10b981' : '#ef4444'}">${s.status}</span>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      else if (feature.id === 'worker-tracking' && feature.workforceData) {
-        customWidget = `
-          <div style="width:100%;font-size:0.78rem;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08)">
-            ${feature.workforceData.map(w => `
-              <div class="flex-between" style="margin-bottom:4px">
-                <span>${w.trade}</span>
-                <strong style="color:${feature.color}">${w.active} Active</strong>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      else if (feature.id === 'interior-design') {
-        customWidget = `
-          <div style="width:100%;margin-bottom:12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:12px">
-            <div style="font-size:0.82rem;color:#fff;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:6px">
-              <i class="fas fa-vr-cardboard" style="color:var(--primary)"></i> 3D Architectural Walkthrough Models Ready
-            </div>
-            <p style="font-size:0.76rem;color:#94a3b8;margin-bottom:10px;line-height:1.4">
-              Explore photorealistic rooms, furniture layouts, day/night lighting simulation, and first-person walkthrough.
-            </p>
-            <button id="btnLaunch3DWalkthroughFromHouse" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;box-shadow:0 0 16px rgba(56,189,248,0.4)">
-              <i class="fas fa-play" style="margin-right:6px"></i> Launch 3D House Walkthrough
-            </button>
-          </div>
-        `;
-      }
-
-      const tagsHtml = feature.tags.map(t => `<span class="skill-tag">${t}</span>`).join('');
-      tagsEl.innerHTML = customWidget + tagsHtml;
-
-      const launchWalkthroughBtn = tagsEl.querySelector('#btnLaunch3DWalkthroughFromHouse');
-      if (launchWalkthroughBtn) {
-        launchWalkthroughBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const samplePlan = generate10IndianFloorPlans()[0];
-          getFloorPlan3DWalkthrough().open(samplePlan);
-        });
-      }
-
-      tagsEl.querySelectorAll('.paint-swatch-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const colHex = btn.dataset.color;
-          if (this.wallMaterials) {
-            this.wallMaterials.forEach(mat => {
-              mat.color.setStyle(colHex);
-            });
-          }
-        });
-      });
+      tagsEl.innerHTML = feature.tags.map(t => `<span class="skill-tag">${t}</span>`).join('');
     }
 
     if (connEl) {
@@ -1550,293 +884,175 @@ export class ConstructionHouse3D {
     this.detailCardEl.classList.add('active');
   }
 
-  hideDetailCard() {
-    if (!this.detailCardEl) return;
-    this.detailCardEl.classList.remove('active');
-    setTimeout(() => {
-      if (!this.selectedFeatureId) {
-        this.detailCardEl.classList.add('hidden');
-      }
-    }, 300);
-  }
-
   setCategoryFilter(category) {
     this.activeCategory = category;
 
-    this.featureNodeMeshes.forEach((nodeItem) => {
-      const match = category === 'ALL' || nodeItem.feature.category === category;
-      nodeItem.group.visible = match;
+    this.featureNodeMeshes.forEach(item => {
+      const match = category === 'ALL' || item.feature.category === category;
+      item.group.visible = match;
+
+      const label = this.htmlLabelElements.get(item.feature.id);
+      if (label) {
+        label.style.display = match ? 'inline-flex' : 'none';
+      }
     });
 
-    this.houseConnectionLines.forEach((conn) => {
+    this.houseConnectionLines.forEach(conn => {
       const match = category === 'ALL' || conn.nodeItem.feature.category === category;
-      conn.mesh.visible = match;
+      conn.line.visible = match;
     });
-
-    this.updateLabelsAndConduits();
   }
 
-  // ==================== Event Listeners ====================
-  setupEventListeners() {
-    this.onMouseMove = (e) => {
-      if (!this.mountEl) return;
-      const rect = this.mountEl.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+  // ==================== Walkthrough Engine & Room Detection ====================
+  updateWalkthrough(delta) {
+    if (this.viewMode !== 'walkthrough') return;
 
-      this.mouse.targetX = (x / rect.width) * 2 - 1;
-      this.mouse.targetY = -(y / rect.height) * 2 + 1;
+    const moveVector = new THREE.Vector3();
+    const forward = new THREE.Vector3(Math.sin(this.fpsYaw), 0, -Math.cos(this.fpsYaw));
+    const right = new THREE.Vector3(Math.cos(this.fpsYaw), 0, Math.sin(this.fpsYaw));
 
-      this.normalizedPointer.x = this.mouse.targetX;
-      this.normalizedPointer.y = this.mouse.targetY;
+    if (this.keys.KeyW || this.keys.ArrowUp) moveVector.add(forward);
+    if (this.keys.KeyS || this.keys.ArrowDown) moveVector.sub(forward);
+    if (this.keys.KeyD || this.keys.ArrowRight) moveVector.add(right);
+    if (this.keys.KeyA || this.keys.ArrowLeft) moveVector.sub(right);
 
-      if (this.camera) {
-        this.raycaster.setFromCamera(this.normalizedPointer, this.camera);
-        const targets = this.featureNodeMeshes.map(n => n.core);
-        const intersects = this.raycaster.intersectObjects(targets);
+    if (moveVector.lengthSq() > 0) {
+      moveVector.normalize().multiplyScalar(this.walkSpeed * delta);
+      this.camera.position.add(moveVector);
 
-        if (intersects.length > 0) {
-          const hitId = intersects[0].object.userData.featureId;
-          this.handleFeatureHover(hitId);
-        } else {
-          this.handleFeatureHover(null);
-        }
+      // Keep eye height at realistic human perspective
+      this.camera.position.y = 1.85;
+
+      // Plot Boundary Constraints
+      const pW = this.villaModel.plotW / 2 - 0.4;
+      const pL = this.villaModel.plotL / 2 - 0.4;
+      this.camera.position.x = Math.max(-pW, Math.min(pW, this.camera.position.x));
+      this.camera.position.z = Math.max(-pL, Math.min(pL, this.camera.position.z));
+
+      // Re-orient Look At
+      const dir = new THREE.Vector3(
+        Math.sin(this.fpsYaw) * Math.cos(this.fpsPitch),
+        Math.sin(this.fpsPitch),
+        -Math.cos(this.fpsYaw) * Math.cos(this.fpsPitch)
+      );
+      this.camera.lookAt(this.camera.position.clone().add(dir));
+    }
+
+    // Room Detection
+    let activeRoomName = 'Exterior Villa Grounds';
+    for (const [id, room] of this.villaModel.roomBoundingBoxes.entries()) {
+      const dx = Math.abs(this.camera.position.x - room.center.x);
+      const dz = Math.abs(this.camera.position.z - room.center.z);
+      if (dx <= room.size.x / 2 && dz <= room.size.z / 2) {
+        activeRoomName = room.name;
+        break;
       }
-    };
-
-    this.onCanvasClick = () => {
-      if (this.camera) {
-        this.raycaster.setFromCamera(this.normalizedPointer, this.camera);
-        const targets = this.featureNodeMeshes.map(n => n.core);
-        const intersects = this.raycaster.intersectObjects(targets);
-
-        if (intersects.length > 0) {
-          const hitId = intersects[0].object.userData.featureId;
-          this.handleFeatureSelect(hitId);
-        } else {
-          this.handleFeatureSelect(null);
-        }
-      }
-    };
-
-    this.onResize = () => {
-      if (!this.mountEl || !this.renderer || !this.camera) return;
-      const rect = this.mountEl.getBoundingClientRect();
-      const w = rect.width || this.mountEl.clientWidth || 920;
-      const h = rect.height || this.mountEl.clientHeight || 680;
-      if (w <= 0 || h <= 0) return;
-
-      this.width = w;
-      this.height = h;
-
-      const isMobile = window.innerWidth < 768;
-      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-      const cameraDistance = isMobile ? 22 : (isTablet ? 19 : 16.5);
-
-      this.camera.position.set(cameraDistance * 0.76, cameraDistance * 0.58, cameraDistance * 0.84);
-      this.camera.aspect = this.width / this.height;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(this.width, this.height);
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-
-      this.updateLabelsAndConduits();
-    };
-
-    this.mountEl.addEventListener('mousemove', this.onMouseMove);
-    this.mountEl.addEventListener('click', this.onCanvasClick);
-    window.addEventListener('resize', this.onResize);
-
-    const closeBtn = this.detailCardEl?.querySelector('#skillCardCloseBtn') || this.detailCardEl?.querySelector('.skill-card-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.handleFeatureSelect(null);
-      });
     }
 
-    const filterBtns = this.container?.querySelectorAll('.skill-filter-btn');
-    if (filterBtns) {
-      filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          filterBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          this.setCategoryFilter(btn.dataset.category);
-        });
-      });
+    const badge = this.hudEl?.querySelector('#archActiveRoomText');
+    if (badge && badge.textContent !== activeRoomName) {
+      badge.textContent = activeRoomName;
     }
   }
 
-  // ==================== Intersection Observer ====================
-  setupIntersectionObserver() {
-    if (!('IntersectionObserver' in window)) return;
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        // Keep active if intersecting or partially visible
-        this.isInViewport = entry.isIntersecting || entry.intersectionRatio > 0;
-      });
-    }, { threshold: [0, 0.1] });
-
-    if (this.container) {
-      this.observer.observe(this.container);
-    } else if (this.mountEl) {
-      this.observer.observe(this.mountEl);
-    }
-  }
-
-  // ==================== Animation Loop ====================
+  // ==================== Main Render Loop ====================
   animate() {
     if (this.isDestroyed) return;
-
     this.animationFrameId = requestAnimationFrame(() => this.animate());
+
     if (!this.isInViewport) return;
 
-    const delta = this.clock.getDelta();
+    const delta = Math.min(this.clock.getDelta(), 0.1);
     const elapsedTime = this.clock.getElapsedTime();
 
-    // Smooth Mouse Parallax
-    this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
-    this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
-
-    if (this.controls) this.controls.update();
-    /* Parallax disabled for OrbitControls */
-
-    // Slow Continuous CAD House Axial Rotation
-    if (this.isRotating && !this.reducedMotion) {
-      if (this.houseGroup) {
-        // this.houseGroup.rotation.y += delta * 0.1;
+    // Smooth Camera Transition Lerp
+    if (this.targetCameraPos && this.viewMode !== 'walkthrough') {
+      this.camera.position.lerp(this.targetCameraPos, delta * 4.0);
+      if (this.targetCameraLookAt) {
+        this.controls.target.lerp(this.targetCameraLookAt, delta * 4.0);
       }
-      if (this.cadAnnotationsGroup) {
-        // this.cadAnnotationsGroup.rotation.y += delta * 0.1;
-      }
-      if (this.groundGroup) {
-        this.groundGroup.rotation.y += delta * 0.06;
-      }
-      if (this.nodesGroup) {
-        this.nodesGroup.rotation.y += delta * 0.05;
+      if (this.camera.position.distanceTo(this.targetCameraPos) < 0.1) {
+        this.targetCameraPos = null;
+        this.targetCameraLookAt = null;
       }
     }
 
-    // Floating Motion of Feature Nodes & Gyro Spins
+    // Controls Update
+    if (this.controls && this.controls.enabled) {
+      this.controls.update();
+    }
+
+    // Walkthrough Update
+    if (this.viewMode === 'walkthrough') {
+      this.updateWalkthrough(delta);
+    }
+
+    // Feature Nodes Gentle Float & Gyro Spin
     this.featureNodeMeshes.forEach((nodeItem) => {
       const offset = nodeItem.group.userData.floatOffset || 0;
       const basePos = nodeItem.group.userData.basePos;
-
-      const floatY = Math.sin(elapsedTime * 1.5 + offset) * 0.16;
-      const floatZ = Math.cos(elapsedTime * 1.2 + offset) * 0.12;
+      const floatY = Math.sin(elapsedTime * 1.6 + offset) * 0.14;
       nodeItem.group.position.y = basePos.y + floatY;
-      nodeItem.group.position.z = basePos.z + floatZ;
 
-      nodeItem.shell.rotation.x += delta * 0.45;
-      nodeItem.shell.rotation.y += delta * 0.55;
-      nodeItem.gyro.rotation.z += delta * 0.75;
+      nodeItem.ring.rotation.x += delta * 0.45;
+      nodeItem.ring.rotation.y += delta * 0.65;
     });
 
-    // Animate Edge Tracers Along House Perimeter
-    if (this.edgeTracerMesh && this.perimeterWaypoints && this.perimeterWaypoints.length > 1) {
-      const posArray = this.edgeTracerMesh.geometry.attributes.position.array;
-      const totalSegs = this.perimeterWaypoints.length;
+    // Update SVG Lines and Labels
+    this.updateLabelsAndConduits();
 
-      this.tracers.forEach((tracer, i) => {
-        tracer.progress = (tracer.progress + delta * tracer.speed) % 1.0;
-        const exactIndex = tracer.progress * totalSegs;
-        const idxA = Math.floor(exactIndex) % totalSegs;
-        const idxB = (idxA + 1) % totalSegs;
-        const segProgress = exactIndex - Math.floor(exactIndex);
+    // Render Scene
+    this.renderer.render(this.scene, this.camera);
+  }
 
-        const pA = this.perimeterWaypoints[idxA];
-        const pB = this.perimeterWaypoints[idxB];
+  updateLabelsAndConduits() {
+    if (!this.mountEl || !this.camera) return;
+    const rect = this.mountEl.getBoundingClientRect();
+    const widthHalf = rect.width / 2;
+    const heightHalf = rect.height / 2;
 
-        posArray[i * 3] = THREE.MathUtils.lerp(pA.x, pB.x, segProgress);
-        posArray[i * 3 + 1] = THREE.MathUtils.lerp(pA.y, pB.y, segProgress);
-        posArray[i * 3 + 2] = THREE.MathUtils.lerp(pA.z, pB.z, segProgress);
-      });
-      this.edgeTracerMesh.geometry.attributes.position.needsUpdate = true;
-    }
+    const pNodeWorld = new THREE.Vector3();
+    const pHouseWorld = new THREE.Vector3();
 
-    // Windows Emissive Breathing
-    if (this.glassMat) {
-      this.glassMat.emissiveIntensity = 0.12 + Math.sin(elapsedTime * 2.0) * 0.06;
-    }
-
-    // Spin Neural Network Particles if active
-    if (this.neuralNetworkGroup && this.neuralNetworkGroup.visible) {
-      this.neuralNetworkGroup.rotation.y += delta * 0.35;
-    }
-
-    // Spin Material Indicator Cubes if active
-    if (this.materialCubesGroup && this.materialCubesGroup.visible) {
-      this.materialCubesGroup.rotation.y += delta * 0.2;
-    }
-
-    // Update Conduits Connecting Nodes to House Targets
-    const pNode = new THREE.Vector3();
-    const pHouse = new THREE.Vector3();
-
+    // Update 3D Line Conduits
     this.houseConnectionLines.forEach((conn) => {
-      conn.nodeItem.group.getWorldPosition(pNode);
+      conn.nodeItem.group.getWorldPosition(pNodeWorld);
+      const targetOffset = this.houseAttachmentPoints[conn.targetZoneKey] || new THREE.Vector3(0, 2, 0);
+      pHouseWorld.copy(targetOffset);
 
-      const targetOffset = this.houseAttachmentPoints[conn.targetZoneKey] || new THREE.Vector3(0, 0, 0);
-      if (this.houseGroup) {
-        this.houseGroup.localToWorld(pHouse.copy(targetOffset));
-      } else {
-        pHouse.copy(targetOffset);
-      }
-
-      this.conduitsGroup.worldToLocal(pNode);
-      this.conduitsGroup.worldToLocal(pHouse);
+      this.conduitsGroup.worldToLocal(pNodeWorld);
+      this.conduitsGroup.worldToLocal(pHouseWorld);
 
       const positions = conn.geometry.attributes.position.array;
-      positions[0] = pNode.x;
-      positions[1] = pNode.y;
-      positions[2] = pNode.z;
-      positions[3] = pHouse.x;
-      positions[4] = pHouse.y;
-      positions[5] = pHouse.z;
+      positions[0] = pNodeWorld.x;
+      positions[1] = pNodeWorld.y;
+      positions[2] = pNodeWorld.z;
+      positions[3] = pHouseWorld.x;
+      positions[4] = pHouseWorld.y;
+      positions[5] = pHouseWorld.z;
       conn.geometry.attributes.position.needsUpdate = true;
     });
 
-    // Update Traveling Data Packets (Node -> House)
-    if (this.packetPointsMesh && this.houseConnectionLines.length > 0) {
-      const packetPositions = this.packetPointsMesh.geometry.attributes.position.array;
+    // Project 2D Glassmorphism Labels
+    this.featureNodeMeshes.forEach((nodeItem) => {
+      const label = this.htmlLabelElements.get(nodeItem.feature.id);
+      if (!label || !nodeItem.group.visible) return;
 
-      this.dataPackets.forEach((packet, i) => {
-        packet.progress += delta * packet.speed;
-        if (packet.progress > 1.0) {
-          packet.progress = 0;
-          packet.conduitIndex = Math.floor(Math.random() * this.houseConnectionLines.length);
-        }
+      nodeItem.group.getWorldPosition(pNodeWorld);
+      pNodeWorld.project(this.camera);
 
-        const conn = this.houseConnectionLines[packet.conduitIndex];
-        if (conn) {
-          conn.nodeItem.group.getWorldPosition(pNode);
-          const targetOffset = this.houseAttachmentPoints[conn.targetZoneKey] || new THREE.Vector3(0, 0, 0);
-          this.houseGroup.localToWorld(pHouse.copy(targetOffset));
+      // Check if behind camera
+      if (pNodeWorld.z > 1.0) {
+        label.style.opacity = '0';
+        return;
+      }
 
-          this.dataPacketsGroup.worldToLocal(pNode);
-          this.dataPacketsGroup.worldToLocal(pHouse);
+      const screenX = pNodeWorld.x * widthHalf + widthHalf;
+      const screenY = -(pNodeWorld.y * heightHalf) + heightHalf;
 
-          const px = THREE.MathUtils.lerp(pNode.x, pHouse.x, packet.progress);
-          const py = THREE.MathUtils.lerp(pNode.y, pHouse.y, packet.progress);
-          const pz = THREE.MathUtils.lerp(pNode.z, pHouse.z, packet.progress);
-
-          packetPositions[i * 3] = px;
-          packetPositions[i * 3 + 1] = py;
-          packetPositions[i * 3 + 2] = pz;
-        }
-      });
-      this.packetPointsMesh.geometry.attributes.position.needsUpdate = true;
-    }
-
-    // Drift Background Construction Particles
-    if (this.particlesSystem) {
-      this.particlesSystem.rotation.y += delta * 0.015;
-    }
-
-    // Render WebGL Frame
-    this.renderer.render(this.scene, this.camera);
-
-    // Project 3D Nodes to 2D HTML Glassmorphism Labels
-    this.updateLabelsAndConduits();
+      label.style.opacity = '1';
+      label.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%)`;
+    });
   }
 
   // ==================== 2D Fallback ====================
@@ -1860,24 +1076,31 @@ export class ConstructionHouse3D {
     `).join('');
   }
 
-  // ==================== Cleanup & Disposal (Both dispose and destroy) ====================
+  // ==================== Cleanup & Disposal ====================
   dispose() {
     this.destroy();
   }
 
   destroy() {
     this.isDestroyed = true;
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    if (this.observer) {
-      this.observer.disconnect();
-    }
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+    if (this.observer) this.observer.disconnect();
+    if (this.resizeObserver) this.resizeObserver.disconnect();
+
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('keyup', this.onKeyUp);
+
     if (this.mountEl) {
       this.mountEl.removeEventListener('mousemove', this.onMouseMove);
+      this.mountEl.removeEventListener('mousedown', this.onMouseDown);
+      this.mountEl.removeEventListener('mouseup', this.onMouseUp);
       this.mountEl.removeEventListener('click', this.onCanvasClick);
     }
-    window.removeEventListener('resize', this.onResize);
+
+    if (this.hudEl) this.hudEl.remove();
+
+    if (this.villaModel) this.villaModel.dispose();
 
     this.disposables.forEach(item => {
       if (item && typeof item.dispose === 'function') {
@@ -1892,6 +1115,7 @@ export class ConstructionHouse3D {
         this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
       }
     }
+
     this.htmlLabelElements.clear();
   }
 }

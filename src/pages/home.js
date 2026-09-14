@@ -1,4 +1,6 @@
 // ==================== Home Page ====================
+import { FEATURE_CATEGORIES as SKILL_CATEGORIES } from '../components/constructionHouse/constructionFeaturesData.js';
+
 export function homePage() {
   return `
     <section class="hero">
@@ -15,7 +17,16 @@ export function homePage() {
     <section class="section skill-sphere-home-section" id="skills">
       <div class="container" style="max-width: 1200px;">
         <div class="skill-sphere-header animate-in">
-          <h2 class="text-center" style="margin-top: 0; margin-bottom: 28px;">3D Smart Construction House & Intelligence Network</h2>
+          <h2 class="text-center" style="margin-top: 0; margin-bottom: 20px;">3D Smart Construction House & Intelligence Network</h2>
+
+          <!-- Category Filter Pills -->
+          <div class="skill-category-filters" id="skillCategoryFilters" style="margin-bottom: 24px;">
+            <button class="skill-filter-btn active" data-category="ALL">All Features (12)</button>
+            <button class="skill-filter-btn" data-category="${SKILL_CATEGORIES.ARCH_DESIGN}">Architecture & Design</button>
+            <button class="skill-filter-btn" data-category="${SKILL_CATEGORIES.AI_ANALYTICS}">AI & Analytics</button>
+            <button class="skill-filter-btn" data-category="${SKILL_CATEGORIES.MATERIALS_COST}">Materials & Cost</button>
+            <button class="skill-filter-btn" data-category="${SKILL_CATEGORIES.SITE_SAFETY}">Site & Operations</button>
+          </div>
         </div>
 
         <!-- 3D Construction House Viewport Wrapper -->
