@@ -169,6 +169,7 @@ async function startServer() {
   // ==================== STATIC FILE & PWA FRONTEND ROUTING ====================
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
+      root: ROOT_DIR,
       server: { middlewareMode: true },
       appType: "spa",
     });
