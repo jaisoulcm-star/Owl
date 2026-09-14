@@ -19,9 +19,11 @@ export function renderNavbar() {
         <a data-route="/report">Report</a>
         <a data-route="/more">More</a>
       </div>
-      <button class="nav-toggle" id="navToggle" aria-label="Menu">
-        <i class="fas fa-bars"></i>
-      </button>
+      <div class="nav-right-actions" style="display: flex; align-items: center; gap: 10px;">
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
     </div>`;
 
   // Mobile toggle
