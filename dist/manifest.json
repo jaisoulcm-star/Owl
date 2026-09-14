@@ -1,0 +1,15 @@
+{
+  "name": "Forzex Construction",
+  "short_name": "Forzex",
+  "description": "Professional construction management platform with AI-powered insights",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050814",
+  "theme_color": "#071021",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["business", "productivity"]
+}
