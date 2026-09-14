@@ -3,6 +3,7 @@
 // real-time 3D feature reactions, glowing wireframe outlines, blueprint HUD, and responsive telemetry.
 
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CONSTRUCTION_FEATURES, getFeatureById } from './constructionFeaturesData.js';
 import { getFloorPlan3DWalkthrough } from '../floorPlanWalkthrough/FloorPlan3DWalkthroughModal.js';
 import { generate10IndianFloorPlans } from '../../pages/floorPlans.js';
@@ -106,6 +107,7 @@ export class ConstructionHouse3D {
     this.setupIntersectionObserver();
 
     this.clock = new THREE.Clock();
+    if (this.controls) this.controls.target.set(0, 0, 0);
     this.animate();
 
     // Trigger an initial resize pass after DOM paints
@@ -149,20 +151,30 @@ export class ConstructionHouse3D {
     this.scene.add(this.universeGroup);
 
     // Architectural Key, Rim & Sky Lights
-    const ambientLight = new THREE.AmbientLight(0x0f2444, 1.8);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
     this.scene.add(ambientLight);
 
-    const cyanKeyLight = new THREE.DirectionalLight(0x00f2fe, 2.2);
+    const cyanKeyLight = new THREE.DirectionalLight(0xffffff, 2.5);
     cyanKeyLight.position.set(16, 22, 14);
     this.scene.add(cyanKeyLight);
 
-    const purpleRimLight = new THREE.DirectionalLight(0xa855f7, 1.8);
+    const purpleRimLight = new THREE.DirectionalLight(0xfff0dd, 1.2);
     purpleRimLight.position.set(-15, 14, -14);
     this.scene.add(purpleRimLight);
 
     const softFillLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
     softFillLight.position.set(0, -10, 10);
     this.scene.add(softFillLight);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.05;
+    this.controls.enableZoom = false;
+    this.controls.enablePan = true;
+    this.controls.autoRotate = true;
+    this.controls.autoRotateSpeed = 1.0;
+    this.controls.minPolarAngle = Math.PI / 2.8; // Lock vertical rotation
+    this.controls.maxPolarAngle = Math.PI / 2.8; // Lock vertical rotation
   }
 
   // ==================== Blueprint Ground Disc & Compass ====================
@@ -272,51 +284,45 @@ export class ConstructionHouse3D {
     // Materials Palette
     // 1. Dark Navy Obsidian Structural Facade
     this.facadeMat = new THREE.MeshStandardMaterial({
-      color: 0x07152b,
-      roughness: 0.2,
-      metalness: 0.85,
-      transparent: true,
-      opacity: 0.92
+      color: 0xe5e7eb, // Off-white stucco
+      roughness: 0.8,
+      metalness: 0.1
     });
     this.wallMaterials.push(this.facadeMat);
 
     // 2. Second floor accent cladding
     this.upperFacadeMat = new THREE.MeshStandardMaterial({
-      color: 0x0a2142,
-      roughness: 0.25,
-      metalness: 0.8,
-      transparent: true,
-      opacity: 0.9
+      color: 0x8b5a2b, // Wood siding
+      roughness: 0.9,
+      metalness: 0.05
     });
     this.wallMaterials.push(this.upperFacadeMat);
 
     // 3. Futuristic Tinted Glass (Semi-Transparent Curtain Wall)
     this.glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x0284c7,
-      emissive: 0x00f2fe,
-      emissiveIntensity: 0.12,
-      roughness: 0.05,
-      metalness: 0.95,
+      color: 0x000000,
+      roughness: 0.1,
+      metalness: 0.8,
       transparent: true,
-      opacity: 0.45,
-      transmission: 0.6,
-      ior: 1.5
+      opacity: 0.6,
+      transmission: 0.8,
+      ior: 1.5,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1
     });
 
     // 4. White / Cyan Architectural Trims & Structural Frames
     const structuralFrameMat = new THREE.MeshStandardMaterial({
-      color: 0xe0f2fe,
-      emissive: 0x38bdf8,
-      emissiveIntensity: 0.35,
-      roughness: 0.2,
-      metalness: 0.9
+      color: 0x334155, // Dark slate metal
+      roughness: 0.4,
+      metalness: 0.7
     });
 
     // 5. Roof Slate Slopes
     this.roofMat = new THREE.MeshStandardMaterial({
-      color: 0x0b1a30,
-      roughness: 0.3,
-      metalness: 0.75
+      color: 0x1f2937, // Dark asphalt
+      roughness: 0.9,
+      metalness: 0.1
     });
 
     this.disposables.push(this.facadeMat, this.upperFacadeMat, this.glassMat, structuralFrameMat, this.roofMat);
@@ -620,6 +626,7 @@ export class ConstructionHouse3D {
 
   // Helper to add glowing wireframe edges
   addWireframeEdges(mesh, geometry, colorHex = 0x00f2fe, opacity = 0.85) {
+    return; // DISABLED for realistic mode
     const edgesGeo = new THREE.EdgesGeometry(geometry, 25);
     const edgesMat = new THREE.LineBasicMaterial({
       color: colorHex,
@@ -1690,18 +1697,16 @@ export class ConstructionHouse3D {
     this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
     this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
 
-    if (this.universeGroup) {
-      this.universeGroup.rotation.y = this.mouse.x * 0.28;
-      this.universeGroup.rotation.x = -this.mouse.y * 0.15;
-    }
+    if (this.controls) this.controls.update();
+    /* Parallax disabled for OrbitControls */
 
     // Slow Continuous CAD House Axial Rotation
     if (this.isRotating && !this.reducedMotion) {
       if (this.houseGroup) {
-        this.houseGroup.rotation.y += delta * 0.1;
+        // this.houseGroup.rotation.y += delta * 0.1;
       }
       if (this.cadAnnotationsGroup) {
-        this.cadAnnotationsGroup.rotation.y += delta * 0.1;
+        // this.cadAnnotationsGroup.rotation.y += delta * 0.1;
       }
       if (this.groundGroup) {
         this.groundGroup.rotation.y += delta * 0.06;
@@ -1880,6 +1885,7 @@ export class ConstructionHouse3D {
       }
     });
 
+    if (this.controls) this.controls.dispose();
     if (this.renderer) {
       this.renderer.dispose();
       if (this.renderer.domElement && this.renderer.domElement.parentNode) {
