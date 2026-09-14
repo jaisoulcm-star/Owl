@@ -3,8 +3,9 @@ export function homePage() {
   return `
     <section class="hero">
       <div class="hero-content animate-in">
-        <h1>Build Smarter with <span class="text-accent">Forzex</span></h1>
-        <p>AI-powered construction management platform for modern builders. Track projects, analyze sites, estimate costs — all in one place.</p>
+        <div class="hero-kicker"><span></span> Construction intelligence, reimagined</div>
+        <h1>Build with <em>clarity.</em><br><span class="text-accent">Move with confidence.</span></h1>
+        <p>Forzex brings project planning, site intelligence, and field decisions into one calm command centre for modern builders.</p>
         <div class="hero-actions">
           <a class="btn btn-primary btn-lg" data-route="/admin/login"><i class="fas fa-shield-halved"></i> Company Admin</a>
           <a class="btn btn-outline btn-lg" data-route="/client/login"><i class="fas fa-user"></i> Client Portal</a>
